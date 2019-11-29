@@ -13,10 +13,9 @@
 
 
 // Default page
-	Route::view('/{path?}', 'welcome');
-	Route::post('/{path?}', function () {
-		return 'welcome';
-	});
+
+
+	Route::view('/{path?}', 'welcome')->where('path', '.+');
 
 	// Route::get('/summoner', 'PagesController@summoner');
 

@@ -10,8 +10,6 @@ import {
 } from "react-router-dom";
 
 
-
-import { useHistory as history } from "react-router-dom";
 import Main from './Main';
 
 
@@ -22,17 +20,17 @@ export default class Root extends Component {
 		this.state = {};
 	}
 	componentDidMount() {
-		document.title = 'Title';
+		document.title = 'Welcome';
 	}
 
 	render() {
 
 		return (
-			<div>
+			<>
 				<Router> 
 					<Main></Main>
 				</Router>
-			</div>
+			</>
 		);
 	}
 }

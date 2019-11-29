@@ -21,4 +21,6 @@ Route::get('test', function(){
 	return response()->json(array('test1' => 1, 'test2' => 2));
 });
 
-Route::get('/summoner', 'PagesController@summoner');
+Route::get('/summoner', 'ApiController@summoner');
+Route::post('/getItems', 'ApiController@getItems');
+Route::post('/getIcons', 'ApiController@getIcons');

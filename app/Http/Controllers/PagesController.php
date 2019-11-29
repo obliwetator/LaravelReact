@@ -34,8 +34,10 @@ class PagesController extends Controller
 			return abort(404);
 		}
 		// Init
-		$lol = new LeagueAPI();
-		$db = new dbCall();
+		$lol = new LeagueAPI([]);
+		$db = new dbCall([
+			dbCall::SET_REGION => $region
+		]);
 
 		// $region = 'eun1';
 		$locale = 'en_GB';

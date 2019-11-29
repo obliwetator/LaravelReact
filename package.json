@@ -24,6 +24,7 @@
         "sass-loader": "^7.1.0"
     },
     "dependencies": {
+        "eslint": "^6.7.1",
         "history": "^4.10.1",
         "react-bootstrap": "^1.0.0-beta.14",
         "react-router-dom": "^5.1.2",
@@ -31,8 +32,8 @@
     },
     "babel": {
         "presets": [
-          "@babel/preset-env",
-          "@babel/preset-react"
+            "@babel/preset-env",
+            "@babel/preset-react"
         ],
         "plugins": [
             "@babel/plugin-proposal-class-properties"

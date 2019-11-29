@@ -2,7 +2,10 @@
 
 namespace API\DragonData;
 
+use API\LeagueAPI\LeagueAPI;
+use API\LeagueAPI\Objects\StaticData\StaticRealm;
 use League\Flysystem\Exception;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 class DragonData
 {
@@ -19,15 +22,46 @@ class DragonData
 	STATIC_RUNESREFORGED    = 'runesReforged';
 	
 	const
+	SET_ENDPOINT                    = 'datadragon-cdn',
+	SET_VERSION                     = 'version';
+
+	const
 	STATIC_SUMMONERSPELLS_BY_KEY = "#by-key",
 	STATIC_CHAMPION_BY_KEY       = "#by-key";
 	
 	const CACHE_DIR = __DIR__ . "/cache";
+	/**
+	 *   Contains library settings.
+	 * 
+	 * @var $settings array
+	 */
+	static protected $settings = [
+		self::SET_ENDPOINT                  => 'https://ddragon.leagueoflegends.com/cdn/'
+	];
 
+	/**
+	 *   Indicates, whether the library has been initialized or not.
+	 *
+	 * @var bool $initialized
+	 */
+	static protected $initialized = false;
+
+	/**
+	 *   
+	 * @var FilesystemAdapter $cache
+	 */
+	static protected $cache;
 
 	static protected $staticData = [];
+	public static function setCacheInterface(FilesystemAdapter $cache )
+	{
+		self::$cache = $cache;
+	}
 
-	static protected $version = "9.13.1";
+	public static function getCacheInterface()
+	{
+		return self::$cache;
+	}
 
 	protected static function saveStaticData( string $urlHash, array $data )
 	{
@@ -91,6 +125,7 @@ class DragonData
 		$url = "https://ddragon.leagueoflegends.com/cdn/$version/data/$locale/$type$key.json$suffix";
 		// We add the suffix to differentiate between what array we use
 
+
 		return $url;
 	}
 
@@ -149,7 +184,7 @@ class DragonData
 	/** Get ALL items */
 	public static function getStaticItems(string $locale = 'en_GB', string $version = null ) : array
 	{
-		$url = self::getStaticDataUrl(self::STATIC_ITEMS, $locale, self::$version);
+		$url = self::getStaticDataUrl(self::STATIC_ITEMS, $locale, self::$settings[DragonData::SET_VERSION]);
 		return self::loadStaticData($url);
 	}
 	/** Get a specific item by its ID */
@@ -166,7 +201,7 @@ class DragonData
 	
 	public static function getStaticProfileIcons(string $locale = 'en_GB', string $version = null ) : array
 	{
-		$url = self::getStaticDataUrl(self::STATIC_PROFILEICONS, $locale, $version);
+		$url = self::getStaticDataUrl(self::STATIC_PROFILEICONS, $locale, self::$settings[DragonData::SET_VERSION]);
 		return self::loadStaticData($url);
 	}
 
@@ -242,5 +277,48 @@ class DragonData
 		self::saveStaticData($urlHash, $data_by_key);
 
 		self::$staticData[$urlHash] = $data_by_key;
+	}
+
+
+		/**
+	 *   Creates new instance by fetching latest Realm info by API static-data endpoint
+	 * request.
+	 *
+	 * @param LeagueAPI $api
+	 * @param array $customSettings
+	 *
+	 * @throws LeagueExceptions\RequestException
+	 * @throws LeagueExceptions\ServerException
+	 */
+	public static function initByApi( LeagueAPI $api)
+	{
+		self::initByRealmObject($api->getStaticRealm());
+	}
+
+	/**
+	 *   Creates new instance from Realm object.
+	 *
+	 * @param StaticRealm $realm
+	 * @param array          $customSettings
+	 */
+	public static function initByRealmObject( StaticRealm $realm)
+	{	
+		self::$settings[self::SET_ENDPOINT] = $realm->cdn . "/";
+		self::$settings[self::SET_VERSION] = $realm->dd;
+
+		self::$initialized = true;
+	}
+
+	/**
+	 * @param string $region
+	 *
+	 * @return array
+	 * @throws ArgumentException
+	 */
+	public static function getStaticRealms( string $region ) : array
+	{
+		$region = strtolower($region);
+		$url = "https://ddragon.leagueoflegends.com" . "/realms/$region.json";
+		return self::loadStaticData($url);
 	}
 }

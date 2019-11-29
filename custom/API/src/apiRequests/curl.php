@@ -12,7 +12,7 @@ const enableCurlLogging = false;
 // SIngle query
 function curl(string $region, $targetUrl, $assoc = false, $additionalParameters = null)
 {
-	$db = new dbCall;
+	$db = new dbCall([dbCall::SET_REGION => $region]);
 	$curl = curl_init();
 
 	// Depending if we have additional parameters to pass we choose the right call constructor
@@ -146,7 +146,9 @@ function curl(string $region, $targetUrl, $assoc = false, $additionalParameters 
 // Executes queries in parallel. Used for getting games by id
 function multiCurl (string $region, array $targetUrls, $assoc = false, array $additionalParameters = null)
 {
-	$db = new dbCall();
+	$db = new dbCall([
+		dbCall::SET_REGION => $region
+	]);
 
 
 	// array of curl handles

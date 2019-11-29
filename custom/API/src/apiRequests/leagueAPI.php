@@ -3,15 +3,102 @@
 namespace API\LeagueAPI;
 
 use API\DragonData\DragonData;
+use API\LeagueAPI\Definitions\IPlatform;
+use API\LeagueAPI\Definitions\IRegion;
+use API\LeagueAPI\Definitions\Platform;
 use API\LeagueAPI\Objects\StaticData;
+use API\LeagueAPI\Objects\StaticData\StaticRealm;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use API\LeagueAPI\Definitions\Region;
+
+
 
 require 'curl.php';
 require 'functions.php';
 
 class LeagueAPI
 {
+	/**
+	 * Settings constants.
+	 */
+	const
+		SET_REGION                   = 'SET_REGION',
+		SET_API_BASEURL              = 'SET_API_BASEURL';
+
+		const
+		//  List of required setting keys
+		SETTINGS_REQUIRED = [
+			self::SET_REGION,
+		],
+		//  List of allowed setting keys
+		SETTINGS_ALLOWED = [
+			self::SET_REGION,
+			self::SET_API_BASEURL,
+		],
+		SETTINGS_INIT_ONLY = [
+		];
+
+	/**
+	 *   Contains current settings.
+	 *
+	 * @var array $settings
+	 */
+	protected $settings = array(
+		self::SET_API_BASEURL      => '.api.riotgames.com',
+	);
+
+	/** @var IRegion $regions */
+	public $regions;
+
+	/** @var IPlatform $platforms */
+	public $platforms;
+	
+
 	// $assoc determined whether the array is converted to an object(false) or an assosiative array(true)
 	private $assoc = true;
+
+	public function __construct( array $settings )
+	{
+
+
+		//  Assigns allowed settings
+		foreach (self::SETTINGS_ALLOWED as $key)
+		if (isset($settings[$key]))
+			$this->settings[$key] = $settings[$key];
+
+		$this->regions = new Region();
+
+		$this->platforms = new Platform();	
+
+		DragonData::initByApi($this);
+
+		// TODO Setup caching for static files from DD
+		$DragonDataCache = $this->setUpDragonDataCache();
+
+		DragonData::setCacheInterface($DragonDataCache);
+
+	}
+
+	private function setUpDragonDataCache(){
+		// Create cache
+		$cache = new FilesystemAdapter(
+
+			// a string used as the subdirectory of the root cache directory, where cache
+			// items will be stored
+			$namespace = 'DataDragonAPI.cache',
+		
+			// the default lifetime (in seconds) for cache items that do not define their
+			// own lifetime, with a value 0 causing items to be stored indefinitely (i.e.
+			// until the files are deleted)
+			$defaultLifetime = 0,
+		
+			// the main cache directory (the application needs read-write permissions on it)
+			// if none is specified, a directory is created inside the system temporary directory
+			$directory = sys_get_temp_dir() . "/" . "RiotAPI"
+		);
+
+		return $cache;
+	}
 
 	// API CALLS
 	/** @return Objects\Summoner[] */
@@ -34,11 +121,21 @@ class LeagueAPI
 		return $summoner;
 	}
 
-	public function getSummonerNameSingle(string $region, string $summonerName)
+	private function setPlatform($region)
 	{
+		$platform = $this->platforms->getPlatformName($region);
+
+		return $platform;
+	}
+
+	public function getSummonerNameSingle(string $summonerName)
+	{
+		$region = $this->setPlatform($this->settings[self::SET_REGION]);
+
 		$targetUrl = "https://{$region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{$summonerName}";
 
 		$data = curl($region,$targetUrl, $this->assoc);
+
 		if (isset($data)) {
 			$summoner = new Objects\Summoner($data);
 			// Remove Spaces and save name with proper capitalization
@@ -424,6 +521,7 @@ class LeagueAPI
 	/** Get ALL items */
 	public function getStaticItems(string $locale = 'en_GB', string $version = null): StaticData\StaticItemList
 	{
+
 		$data = DragonData::getStaticItems($locale, $version);
 
 		array_walk($data['data'], function (&$d, $k) {
@@ -525,4 +623,27 @@ class LeagueAPI
 
 		return $this;
 	}
+
+		/**
+	 *   Retrieve realm data. (Region versions)
+	 *
+	 * @cli-name get-realm
+	 * @cli-namespace static-data
+	 *
+	 * @return StaticRealm
+	 * @throws RequestException
+	 * @throws ServerException
+	 */
+    public function getStaticRealm(): StaticRealm
+    {
+	    $result = false;
+		// Fetch StaticData from JSON files
+		$result = DragonData::getStaticRealms($this->settings[self::SET_REGION]);
+
+		$this->result_data = $result;
+
+		// Parse array and create instances
+		return new StaticRealm($result);
+
+    }
 }

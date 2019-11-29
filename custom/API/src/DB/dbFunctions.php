@@ -2,6 +2,8 @@
 
 namespace API\dbCall;
 
+use API\LeagueAPI\Definitions\Platform;
+use API\LeagueAPI\Definitions\Region;
 use API\LeagueAPI\LeagueAPI;
 use API\LeagueAPI\Objects;
 
@@ -11,7 +13,47 @@ class dbCall
 	/** @var \mysqli $conn */
 	public $conn;
 	
+	/**
+	 * Settings constants.
+	 */
+	const
+		SET_REGION                   = 'SET_REGION',
+		SET_API_BASEURL              = 'SET_API_BASEURL';
 
+		const
+		//  List of required setting keys
+		SETTINGS_REQUIRED = [
+			self::SET_REGION,
+		],
+		//  List of allowed setting keys
+		SETTINGS_ALLOWED = [
+			self::SET_REGION,
+			self::SET_API_BASEURL,
+		],
+		SETTINGS_INIT_ONLY = [
+		];
+
+	/**
+	 *   Contains current settings.
+	 *
+	 * @var array $settings
+	 */
+	protected $settings = array(
+		self::SET_API_BASEURL      => '.api.riotgames.com',
+	);
+
+	public function __construct( array $settings )
+	{
+		//  Assigns allowed settings
+		foreach (self::SETTINGS_ALLOWED as $key)
+		if (isset($settings[$key]))
+			$this->settings[$key] = $settings[$key];
+
+		$this->regions = new Region();
+		
+		$this->platforms = new Platform();	
+
+	}
 	private function openCon(string $dbRegion)
 	{
 		$this->conn = DbOpenConn($dbRegion);
@@ -155,7 +197,7 @@ class dbCall
 		// First time we lookup. If it doesn't exist make an API request and put it in the DB.
 		if ($resultAssoc == null) {
 			$lol = $this->makeApiRequest();
-			$summonerDataDb = $lol->getSummonerNameSingle($region, $summonerName);
+			$summonerDataDb = $lol->getSummonerNameSingle($summonerName);
 			if (isset($summonerDataDb)) {
 				$this->setSummonerSingle($region, $summonerDataDb);
 			}
@@ -684,7 +726,9 @@ class dbCall
 	}
 	private function makeApiRequest()
 	{
-		$lol = new LeagueAPI();
+		$lol = new LeagueAPI([
+            LeagueAPI::SET_REGION => $this->settings[self::SET_REGION],
+        ]);
 		return $lol;
 	}
 
