@@ -16,3 +16,8 @@ yarn-error.log
 
 /resources/views/report.html
 dbConnect.php
+
+/custom/API/src/apiRequests/cache
+/custom/API/src/DragonData/DragonCache
+
+/public/js
