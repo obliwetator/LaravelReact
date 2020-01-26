@@ -12,7 +12,11 @@ const mix = require('laravel-mix');
  */
 
 mix.react('resources/js/app.js', 'public/js').sourceMaps()
-   .sass('resources/sass/app.scss', 'public/css');
+   //.sass('resources/sass/app.scss', 'public/css')
 
 
+   mix.browserSync('http://127.0.0.1:8000/');
+   if (mix.inProduction()) {
+      mix.version();
+   }
    mix.disableSuccessNotifications();

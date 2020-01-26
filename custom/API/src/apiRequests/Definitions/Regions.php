@@ -48,20 +48,20 @@ class Region implements IRegion
 	const JAPAN = 'jp';
 
 	public static $list = array(
-		self::NORTH_AMERICA   => self::NORTH_AMERICA,
-		self::EUROPE          => self::EUROPE,
-		self::EUROPE_WEST     => self::EUROPE_WEST,
-		self::EUROPE_EAST     => self::EUROPE_EAST,
-		self::LAMERICA_SOUTH  => self::LAMERICA_SOUTH,
-		self::LAMERICA_NORTH  => self::LAMERICA_NORTH,
-		self::BRASIL          => self::BRASIL,
-		self::RUSSIA          => self::RUSSIA,
-		self::TURKEY          => self::TURKEY,
-		self::OCEANIA         => self::OCEANIA,
-		self::ASIA            => self::ASIA,
-		self::KOREA           => self::KOREA,
-		self::JAPAN           => self::JAPAN,
-		self::AMERICAS        => self::AMERICAS,
+		Platform::NORTH_AMERICA   => self::NORTH_AMERICA,
+		Platform::EUROPE          => self::EUROPE,
+		Platform::EUROPE_WEST     => self::EUROPE_WEST,
+		Platform::EUROPE_EAST     => self::EUROPE_EAST,
+		Platform::LAMERICA_SOUTH  => self::LAMERICA_SOUTH,
+		Platform::LAMERICA_NORTH  => self::LAMERICA_NORTH,
+		Platform::BRASIL          => self::BRASIL,
+		Platform::RUSSIA          => self::RUSSIA,
+		Platform::TURKEY          => self::TURKEY,
+		Platform::OCEANIA         => self::OCEANIA,
+		Platform::ASIA            => self::ASIA,
+		Platform::KOREA           => self::KOREA,
+		Platform::JAPAN           => self::JAPAN,
+		Platform::AMERICAS        => self::AMERICAS,
 	);
 
 

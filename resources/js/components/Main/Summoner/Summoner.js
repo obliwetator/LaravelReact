@@ -3,9 +3,12 @@ import ReactDOM from 'react-dom';
 import axios from 'axios';
 import NotFound from '../../404/NotFound';
 
-import Image from 'react-bootstrap/Image'
 
 import SummonerHeader from './SummonerHeader'
+import { Tab, Tabs } from 'react-bootstrap';
+
+import { Summary } from "./pages/Summary";
+import LiveGame from './pages/LiveGame';
 
 export default class Summoner extends Component {
   // Prevents a memory leak if we have an async request and dont update the state ( Eg we go forward or backward in the browser)
@@ -21,6 +24,10 @@ export default class Summoner extends Component {
       summonerName: null,
       items: null,
       icons: null,
+      summonerSpells: null,
+      champions: null,
+      runes: null,
+      currentTab: "summary",
     };
   }
 
@@ -44,17 +51,14 @@ export default class Summoner extends Component {
         region: this.props.match.params.region
       }
     })
-    // .then(response => {
-    //   this.setState({
-    //     data: response.data
-    //   })
-    // })
-    // .catch(error => {
-    //   this.setState({ error: error })
-    // })
-    // .finally(() => this.setState({
-    //   isLoaded: true
-    // }));
+
+  }
+
+  GetSummonerLeagueTarget = (summoner) => {
+    return axios.post('/api/getSummonerLeagueTarget', {
+      region: this.props.match.params.region,
+      summonerId: summoner.id
+    })
   }
 
   GetItems = () => {
@@ -65,6 +69,25 @@ export default class Summoner extends Component {
 
   GetIcons = () => {
     return axios.post('/api/getIcons', {
+      region: this.props.match.params.region
+    })
+  }
+
+  GetSummmonerSpell = () => {
+    return axios.post('/api/getSummmonerSpell', {
+      region: this.props.match.params.region
+    })
+  }
+
+
+  GetChampions = () => {
+    return axios.post('/api/getChampions', {
+      region: this.props.match.params.region
+    })
+  }
+
+  GetRunes = () => {
+    return axios.post('/api/getRunes', {
       region: this.props.match.params.region
     })
   }
@@ -80,19 +103,40 @@ export default class Summoner extends Component {
     axios.all([
       this.GetSummoner(),
       this.GetItems(),
-      this.GetIcons()
+      this.GetIcons(),
+      this.GetSummmonerSpell(),
+      this.GetChampions(),
+      this.GetRunes(),
     ])
-      .then(axios.spread((Summoner, Items, Icons) => {
+      .then(axios.spread((Data, Items, Icons, SummonerSpells, Champions, Runes) => {
         if (this._isMounted) {
-        this.setState({
-          [Summoner.data.name]: Summoner.data.replace(/\s/g,''),
-          summonerName: Summoner.data.name.replace(/\s/g,''),
-          items: Items.data,
-          icons: Icons.data,
-          isLoaded: true,
-        })
-        document.title = this.state.summonerName
-       }
+          this.setState({
+            [Data.data.summoner.name.replace(/\s/g, '').toLowerCase()]: Data.data,
+            summonerName: Data.data.summoner.name.replace(/\s/g, '').toLowerCase(),
+            items: Items.data,
+            icons: Icons.data,
+            summonerSpells: SummonerSpells.data,
+            champions: Champions.data,
+            runes: Runes.data,
+          })
+          
+          axios.all([
+            this.GetSummonerLeagueTarget(Data.data.summoner)
+          ]).then(axios.spread((SummonerLeagueTarget) =>{
+            let property = "summonerLeagueTarget" + Data.data.summoner.name.replace(/\s/g, '').toLowerCase()
+
+            this.setState({
+              [property]: SummonerLeagueTarget.data,
+              isLoaded: true,
+            })
+          })).catch((error) => {
+            this.setState({
+              error: error
+            })
+          })
+          
+          document.title = Data.data.summoner.name
+        }
       }))
       .catch((error) => {
         this.setState({
@@ -106,62 +150,116 @@ export default class Summoner extends Component {
     let prevSearch = prevProps.match.params.name;
     let newSearch = this.props.match.params.name;
 
-    // Will only refresh if the input is different from the previous
+
     if (prevSearch !== newSearch) {
-      this.handleSearch()
-          axios.all([
-      this.GetSummoner(),
-    ])
-      .then(axios.spread((Summoner) => {
-        this.setState({
-          [Summoner.data.name]: Summoner.data.replace(/\s/g,''),
-          summonerName: Summoner.data.name.replace(/\s/g,''),
-          isLoaded: true,
-        })
-        document.title = this.state.summonerName
-      }))
-      .catch((error) => {
-        this.setState({
-          error: error
-        })
-        document.title = "summoner not found"
-      })
+
+      // When we search for a new summoner we save they summoner details in the state.
+      // If we search for a new summoner or go back/formward in history we will check the state first before calling the server
+      if (this.props.match.params.name && this.state[this.props.match.params.name]) {
+        // We update which summoner we are currently viewing. The summoner object with the same name should be in the state
+        this.setState({ summonerName: this.props.match.params.name })
+      }
+      else {
+        // Will only refresh if the input is different from the previous
+        this.handleSearch()
+        axios.all([
+          this.GetSummoner(),
+        ])
+          .then(axios.spread((Data) => {
+            this.setState({
+              [Data.data.summoner.name.replace(/\s/g, '').toLowerCase()]: Data.data,
+              summonerName: Data.data.summoner.name.replace(/\s/g, '').toLowerCase(),
+              isLoaded: true,
+            })
+            
+            axios.all([
+              this.GetSummonerLeagueTarget(Data.data.summoner)
+            ]).then(axios.spread((SummonerLeagueTarget) =>{
+              let property = "summonerLeagueTarget" + Data.data.summoner.name.replace(/\s/g, '').toLowerCase()
+  
+              this.setState({
+                [property]: SummonerLeagueTarget.data,
+                isLoaded: true,
+              })
+            })).catch((error) => {
+              this.setState({
+                error: error
+              })
+            })
+
+            document.title = Data.data.summoner.name
+          }))
+          .catch((error) => {
+            this.setState({
+              error: error
+            })
+            document.title = "summoner not found"
+          })
+      }
     }
   }
 
+  handleTab = (event) => {
+    this.setState({
+        currentTab: event
+    })
+}
+
   render() {
+    console.log("Summoner", this.state)
     // const { error, isLoaded, summonerName } = this.state
-    { console.log(this.state)}
     if (this.state.error) {
       return <NotFound error={this.state.error} />
     }
-    else if (!this.state.isLoaded) {
-      return <div>Loading...</div>;
+    // When trying to access the state very rapidly(Eg when going back/ froward in history). Sometimes it may fail to load some data that we are dowmloading.
+    // We check if the data we are downloading is present and only then we can proceed
+    else if (!this.state.isLoaded || !this.state.icons || !this.state["summonerLeagueTarget" + this.state.summonerName]) {
+      return (
+        // Loading animation
+        <div className="spinner">
+          <div className="rect1"></div>
+          <div className="rect2"></div>
+          <div className="rect3"></div>
+          <div className="rect4"></div>
+          <div className="rect5"></div>
+        </div>
+      );
     }
     else {
       return (
         <>
           <div className="summoner-header">
-            <SummonerHeader icons={this.state.icons} summoner={this.state[this.state.summonerName]}/>
+            <SummonerHeader icons={this.state.icons} summoner={this.state[this.state.summonerName].summoner} />
             <div className="Menu">
-              <h1>Some menus to choose from for different stats</h1>
-              <ul className="nav nav-tabs" id="myTab" role="tablist">
-                <li id="Summary-tab" className="nav-item" >
-                  <a data-toggle="tab" href="#Summary" role="tab" aria-controls="Summary" aria-selected="true" className="nav-link active">Summary</a>
-                </li>
+              <Tabs onSelect={this.handleTab} activeKey={this.state.currentTab} id="uncontrolled-tab-example">
+                <Tab eventKey="summary" title="Summary">
+                  <Summary 
+                  summoner = {this.state[this.state.summonerName].summoner}
+                  gamesById = {this.state[this.state.summonerName].gamesById}
+                  champions = {this.state.champions}
+                  summonerSpells = {this.state.summonerSpells}
+                  items = {this.state.items}
+                  {...this.state["summonerLeagueTarget" + this.state.summonerName]}
+                  />
+                </Tab>
+                <Tab eventKey="champions" title="Champions">
+                  Profile
+                </Tab>
+                <Tab eventKey="leagues" title="Leagues">
+                  Contact
+                </Tab>
+                <Tab eventKey="LiveGame" title="Live Game">
+                  <LiveGame
+                    runes={this.state.runes}
+                    summonerSpells={this.state.summonerSpells}
+                    summoner={this.state[this.state.summonerName].summoner}
+                    champions={this.state.champions}
+                    region={this.state.region}
+                    tabs={this.state.currentTab}
+                  />
+                </Tab>
+              </Tabs>
 
-                <li id="Champions-tab" className="nav-item" >
-                  <a data-toggle="tab" href="#Champions" role="tab" aria-controls="Champions" aria-selected="false" className="nav-link">Champions</a>
-                </li>
-
-                <li id="Leagues-tab" className="nav-item" >
-                  <a data-toggle="tab" href="#Leagues" role="tab" aria-controls="Leagues" aria-selected="false" className="nav-link">Leagues</a>
-                </li>
-
-                <li id="LiveGame-tab" className="nav-item" >
-                  <a data-toggle="tab" href="#LiveGame " role="tab" aria-controls="LiveGame" aria-selected="false" className="nav-link">Live Game</a>
-                </li>
-              </ul>
             </div>
           </div>
           <div className="summoner=stats">
@@ -170,6 +268,5 @@ export default class Summoner extends Component {
         </>
       );
     }
-
   }
 }

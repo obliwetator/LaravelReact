@@ -29,7 +29,7 @@ class DragonData
 	STATIC_SUMMONERSPELLS_BY_KEY = "#by-key",
 	STATIC_CHAMPION_BY_KEY       = "#by-key";
 	
-	const CACHE_DIR = __DIR__ . "/cache";
+	const CACHE_DIR = __DIR__ ;
 	/**
 	 *   Contains library settings.
 	 * 
@@ -60,118 +60,127 @@ class DragonData
 
 	public static function getCacheInterface()
 	{
+		if (!self::$cache) {
+			$cacheInterface = new FilesystemAdapter(
+				"DragonCache",
+				3600,
+				__DIR__
+			);
+			self::setCacheInterface($cacheInterface);
+		}
 		return self::$cache;
 	}
 
-	protected static function saveStaticData( string $urlHash, array $data )
+	protected static function saveStaticData( string $url, array $data )
 	{
-		// Save to file
-		@mkdir(self::CACHE_DIR);
-		file_put_contents(self::CACHE_DIR . "/$urlHash", serialize($data));
+
+		$urlHash = md5($url);
+		$cache = self::getCacheInterface();
+		$staticData = $cache->getItem($urlHash);
+		$staticData->set($data);
+		// Save the realm data with a lifetime of 1 hour.
+		if (strpos($url, "/realms/") !== false) {
+			$staticData->expiresAfter(60 * 60);
+		}
+		else{
+			// Store every other static data indefinetly
+			// When the realm data updates the static data url will change which will cause it download it again since it doesnt exist
+			// It doesnt take up much space and it might be usefull in the future.
+			// TODO: Add cronjob to delete very old data ????
+			$staticData->expiresAfter(null);
+		}
+		$cache->save($staticData);
 	}
 
-	public static function loadStaticData($url, $processing = null)
+	public static function loadStaticData($url, callable $postprocess = null, bool $data_from_postprocess = false)
 	{
-		$urlHash = md5($url);
-		// try to load the chached data
 		$data = self::loadCachedStaticData($url);
-		if ($data)
-		{
-			// Data is cached meaing it's already an array
-			return $data;
+		// Cached Data exists
+
+		if ($data->isHit()) {
+			return $data->get();
 		}
+
+		$fragmentlessUrl = $url;
+		if (($fragmentPos = strpos($url, "#")) !== false)
+		{
+			$fragmentlessUrl = substr($url, 0, $fragmentPos);
+		}
+
 		// Try to load from the web
 		$data = @file_get_contents($url);
-		if ($data == false)
+		if (!$data)
 		{
 			throw new Exception("Failed to get static data: $url .");
 		}
+
 		// Data from web comes as json
 		$data = json_decode($data, true);
-		// save to memory
-		self::$staticData["$urlHash"] = $data;
-		// save to cache
-		self::saveStaticData($urlHash, $data);
-		if ($processing)
+		self::saveStaticData($fragmentlessUrl, $data);
+
+		if ($postprocess)
 		{
-			self::$processing($url,$data);
+			$postprocess_data = $postprocess($fragmentlessUrl, $data);
+			if ($data_from_postprocess)
+				return $postprocess_data;
 		}
 		return $data;
 	}
 
+	public static function getCacheObject()
+	{
+		$cache = new FilesystemAdapter(
+			"",
+			0,
+			self::CACHE_DIR
+		);
+	}
+	/** @return \Symfony\Component\Cache\CacheItem */
 	public static function loadCachedStaticData($url)
 	{
 		$urlHash = md5($url);
+		$cache = self::getCacheInterface();
 
-		//  First try memory
-		if (isset(self::$staticData[$urlHash]))
-			return self::$staticData[$urlHash];
-
-		//  Then try file cache
-		$data = @file_get_contents(self::CACHE_DIR . "/$urlHash");
-		if ($data) {
-			return unserialize($data);
-		}
-
-		return [];
+		return $cache->getItem($urlHash);
 	}
 	/** We crate the url in case we need to download the data if ours is outdated. <- TODO: */
 	public static function getStaticDataUrl($type, $locale ,$version = null, $suffix = null, $key = null): string
 	{
+		// If we havent mannually overriden the version use DD version (latest)
+		if (is_null($version)) {
+			$version = self::$settings[DragonData::SET_VERSION];
+		}
+
 		// The key variable is used ONLY for champions folder which contanains individual champion details.
 		// Otherwise it will always be null
 		// sample url for the champion folder
-		// ""https://ddragon.leagueoflegends.com/cdn/9.13.1/data/en_GB/champion/Orianna.json""
+		//		https://ddragon.leagueoflegends.com/cdn/9.13.1/data/en_GB/champion/Orianna.json
 		$url = "https://ddragon.leagueoflegends.com/cdn/$version/data/$locale/$type$key.json$suffix";
 		// We add the suffix to differentiate between what array we use
+
+		if (is_null($version)) {
+			throw new Exception("No version for DD");
+		}
 
 
 		return $url;
 	}
 
-	public static function getStaticChampions( string $locale = 'en_GB', string $version = null ) : array
+	public static function getStaticChampions( string $locale = 'en_GB', string $version = null, bool $data_by_key ) : array
 	{
-		$url = self::getStaticDataUrl(self::STATIC_CHAMPIONS, $locale, $version);
-		return self::loadStaticData($url, "_champion");
+		$url = self::getStaticDataUrl(self::STATIC_CHAMPIONS, $locale, $version ,$data_by_key ? self::STATIC_CHAMPION_BY_KEY : null);
+		return self::loadStaticData($url, [DragonData::class, "_champion"], $data_by_key);
 	}
 
-	public static function getStaticChampionDataSimple(string $locale = 'en_GB', string $version = null) : array
-	{
-		$url = self::getStaticDataUrl(self::STATIC_CHAMPIONS, $locale, self::$version, self::STATIC_CHAMPION_BY_KEY);
-
-		// We try to load the data from the cache first
-		$data = self::loadCachedStaticData($url);
-		// If we don't have it in cache(newer version etc.). We will grab into from the web and store it in the cache
-		if (!$data)
-		{
-			self::getStaticChampions($locale, $version);
-			$data = self::loadCachedStaticData($url);
-		}
-
-		return $data;
-	}
-
-	public static function getStaticChampionsWithKeys(string $locale = 'en_GB', string $version = null ) : array
-	{
-		$url = self::getStaticDataUrl(self::STATIC_CHAMPIONS,$locale, $version, self::STATIC_CHAMPION_BY_KEY);
-
-		$data = self::loadCachedStaticData($url);
-		if (!$data)
-		{
-			self::getStaticChampions($locale, $version);
-			$data = self::loadCachedStaticData($url);
-		}
-		return $data;
-	}
 	public static function getStaticChampionDataDetails(string $championId, string $locale = 'enGB', string $version = null) : array
 	{
-		$url = self::getStaticDataUrl(self::STATIC_CHAMPION, $locale, $version, null, $championId);
+		$url = self::getStaticDataUrl(self::STATIC_CHAMPION, $locale, self::$settings[DragonData::SET_VERSION], null, $championId);
 		return self::loadStaticData($url);
 	}
 	public static function getStaticChampionDataById($championId, $locale, $version = null) : array
 	{
 		// Grab the whole json
-		$data = self::getStaticChampionDataSimple($locale, $version = "9.13.1");
+		$data = self::getStaticChampions($locale, self::$settings[DragonData::SET_VERSION]);
 
 		if (isset($data["data"][$championId]) == false) 
 		{
@@ -181,6 +190,8 @@ class DragonData
 		// We return only the data for the specified champion
 		return $data["data"][$championId];
 	}
+
+
 	/** Get ALL items */
 	public static function getStaticItems(string $locale = 'en_GB', string $version = null ) : array
 	{
@@ -191,7 +202,7 @@ class DragonData
 	public static function  getStaticItem($itemId, string $locale = 'en_GB', string $version = null) : array
 	{
 		// We get all item and return only the specified one;
-		$data = self::getStaticItems($locale, $version);
+		$data = self::getStaticItems($locale, self::$settings[DragonData::SET_VERSION]);
 		if (isset($data["data"][$itemId]) == false) 
 		{
 			throw new Exception("Item with ID: $itemId doesn't exist");
@@ -207,32 +218,19 @@ class DragonData
 
 	public static function getStaticRunesReforged(string $locale = 'en_GB', string $version = null) :array
 	{
-		$url = self::getStaticDataUrl(self::STATIC_RUNESREFORGED, $locale, $version);
+		$url = self::getStaticDataUrl(self::STATIC_RUNESREFORGED, $locale, self::$settings[DragonData::SET_VERSION]);
 		return self::loadStaticData($url);
 	}
 
-	public static function getStaticSummonerSpells(string $locale = 'en_GB', string $version = null) :array
+	public static function getStaticSummonerSpells(string $locale = 'en_GB', string $version = null, bool $data_by_key = false ) :array
 	{
-		$url = self::getStaticDataUrl(self::STATIC_SUMMONERSPELLS, $locale, $version);
-		
-		return self::loadStaticData($url,"_summoner");
+		$url = self::getStaticDataUrl(self::STATIC_SUMMONERSPELLS, $locale, self::$settings[DragonData::SET_VERSION] ,$data_by_key ? self::STATIC_SUMMONERSPELLS_BY_KEY : null);
+		return self::loadStaticData($url, [DragonData::class, "_summoner"], $data_by_key);
 	}
 	
-	public static function getStaticSummonerSpellsWithKeys(string $locale = 'en_GB', string $version = null)
-	{
-		$url = self::getStaticDataUrl(self::STATIC_SUMMONERSPELLS, $locale, $version, self::STATIC_SUMMONERSPELLS_BY_KEY);
-		$data = self::loadCachedStaticData($url);
-		if (!$data)
-		{
-			self::getStaticSummonerSpells($locale, $version);
-			$data = self::loadCachedStaticData($url);
-		}
-		return $data;
-	}
-
 	public static function getStaticSummonerSpellById(int $key, string $locale = 'en_GB', string $version = null)
 	{
-		$data = self::getStaticSummonerSpellsWithKeys($locale, $version);
+		$data = self::getStaticSummonerSpells($locale, self::$settings[DragonData::SET_VERSION], true);
 
 		if (isset($data['data'][$key]) == false) {
 			return new Exception("summoner spell not found.");
@@ -242,45 +240,12 @@ class DragonData
 	}
 	public static function getStaticMaps (string $locale = 'en_GB', string $version = null)
 	{
-		$url = self::getStaticDataUrl(self::STATIC_MAPS, $locale, $version);
+		$url = self::getStaticDataUrl(self::STATIC_MAPS, $locale, self::$settings[DragonData::SET_VERSION]);
 
 		return self::loadStaticData($url);
 	}
-	protected static function _champion( string $url, array $data )
-	{
-		$url = $url . self::STATIC_CHAMPION_BY_KEY;
-		$urlHash = md5($url);
 
-		$data_by_key = $data;
-		$data_by_key['data'] = [];
-
-		// black magic. Converts the $data["data"][champion name] to $data["data"][$championId]
-		array_walk($data['data'], function( $d ) use (&$data_by_key) {
-			$data_by_key['data'][(int)$d['key']] = $d;
-		});
-		// Save the converted array to cache,e
-		self::saveStaticData($urlHash, $data_by_key);
-		// save to memory
-		self::$staticData["$urlHash"] = $data_by_key;
-	}
-	protected static function _summoner(string $url, array $data)
-	{
-		$url = $url . self::STATIC_SUMMONERSPELLS_BY_KEY;
-
-		$urlHash = md5($url);
-		$data_by_key = $data;
-		$data_by_key['data'] = [];
-
-		array_walk($data['data'], function( $d ) use (&$data_by_key) {
-			$data_by_key['data'][(int)$d['key']] = $d;
-		});
-		self::saveStaticData($urlHash, $data_by_key);
-
-		self::$staticData[$urlHash] = $data_by_key;
-	}
-
-
-		/**
+	/**
 	 *   Creates new instance by fetching latest Realm info by API static-data endpoint
 	 * request.
 	 *
@@ -306,6 +271,7 @@ class DragonData
 		self::$settings[self::SET_ENDPOINT] = $realm->cdn . "/";
 		self::$settings[self::SET_VERSION] = $realm->dd;
 
+
 		self::$initialized = true;
 	}
 
@@ -320,5 +286,43 @@ class DragonData
 		$region = strtolower($region);
 		$url = "https://ddragon.leagueoflegends.com" . "/realms/$region.json";
 		return self::loadStaticData($url);
+	}
+
+
+	// ICONS
+
+	public static function getSummonerSpellsIcons()
+	{
+		
+	}
+
+
+
+	// Callable functions
+	protected static function _champion( string $url, array $data )
+	{
+		$url .= self::STATIC_CHAMPION_BY_KEY;
+		$data_by_key = $data;
+		$data_by_key['data'] = [];
+
+		array_walk($data['data'], function( $d ) use (&$data_by_key) {
+			$data_by_key['data'][(int)$d['key']] = $d;
+		});
+
+		self::saveStaticData($url, $data_by_key);
+		return $data_by_key;
+	}
+	protected static function _summoner(string $url, array $data)
+	{
+		$url .= self::STATIC_SUMMONERSPELLS_BY_KEY;
+		$data_by_key = $data;
+		$data_by_key['data'] = [];
+
+		array_walk($data['data'], function( $d ) use (&$data_by_key) {
+			$data_by_key['data'][(int)$d['key']] = $d;
+		});
+
+		self::saveStaticData($url, $data_by_key);
+		return $data_by_key;
 	}
 }

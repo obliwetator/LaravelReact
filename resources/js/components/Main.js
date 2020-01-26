@@ -20,7 +20,7 @@ class Main extends React.Component {
 
   render() {
     return (
-      <>
+      <div className="dark">
         <NavigationBar {...this.props}/>
         <Switch>
           <Route exact path="/" component={Welcome} />
@@ -46,7 +46,7 @@ class Main extends React.Component {
           />
         </Switch>
         <Footer />
-      </>
+      </div>
     );
   }
 }

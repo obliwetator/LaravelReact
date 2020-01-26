@@ -9,6 +9,7 @@
     "license": "MIT",
     "require": {
         "php": "^7.2",
+        "cboden/ratchet": "^0.4.1",
         "fideloper/proxy": "^4.0",
         "itsgoingd/clockwork": "^4.0",
         "laravel/framework": "^6.2",
@@ -38,8 +39,8 @@
 			"App\\": "app/",
 			"API\\LeagueAPI\\": "custom/API/src/apiRequests",
 			"API\\DragonData\\": "custom/API/src/DragonData",
-			"API\\dbCall\\": "custom/API/src/DB"
-
+            "API\\dbCall\\": "custom/API/src/DB",
+            "MyApp\\": "custom/Ratchet"
         },
         "classmap": [
             "database/seeds",
@@ -47,6 +48,7 @@
 		]
 		
     },
+    
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"

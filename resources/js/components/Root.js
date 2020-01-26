@@ -8,10 +8,7 @@ import {
 	Link,
 	useParams
 } from "react-router-dom";
-
-
 import Main from './Main';
-
 
 export default class Root extends Component {
 	

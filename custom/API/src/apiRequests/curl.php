@@ -12,7 +12,9 @@ const enableCurlLogging = false;
 // SIngle query
 function curl(string $region, $targetUrl, $assoc = false, $additionalParameters = null)
 {
-	$db = new dbCall([dbCall::SET_REGION => $region]);
+	$db = new dbCall([
+		dbCall::SET_PLATFORM => $region
+		]);
 	$curl = curl_init();
 
 	// Depending if we have additional parameters to pass we choose the right call constructor
@@ -67,7 +69,7 @@ function curl(string $region, $targetUrl, $assoc = false, $additionalParameters 
 
 
 	// Change to async? Not necessary to display the page
-	$db->setRequests($region, $aHeaders);
+	$db->setRequests($aHeaders);
 
 
 
@@ -147,7 +149,7 @@ function curl(string $region, $targetUrl, $assoc = false, $additionalParameters 
 function multiCurl (string $region, array $targetUrls, $assoc = false, array $additionalParameters = null)
 {
 	$db = new dbCall([
-		dbCall::SET_REGION => $region
+		dbCall::SET_PLATFORM => $region
 	]);
 
 
@@ -229,7 +231,7 @@ function multiCurl (string $region, array $targetUrls, $assoc = false, array $ad
 		curl_multi_remove_handle($mh, $ch);
 	}
 	// Change to async? Not necessary to display the page
-	$db->setRequestsMulti($region, $aHeaders);
+	$db->setRequestsMulti($aHeaders);
 
 	// close
 	curl_multi_close($mh);

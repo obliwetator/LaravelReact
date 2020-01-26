@@ -7,7 +7,6 @@ export default function SummonerHeader(props) {
             <div className="d-inline-block">
                 <div className="position-relative" >
                     <Image src={"/lolContent/img2/profileicon/" + props.icons.data[props.summoner.profileIconId].image.full} alt="Rank icon"></Image>
-                    <div>No image available for this image</div>
                     <span className="position-absolute" id="level"></span>
                 </div>
             </div>

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,3 +25,10 @@ Route::get('test', function(){
 Route::get('/summoner', 'ApiController@summoner');
 Route::post('/getItems', 'ApiController@getItems');
 Route::post('/getIcons', 'ApiController@getIcons');
+Route::post('/getSummmonerSpell', 'ApiController@getSummonerSpells');
+Route::post('/getChampions', 'ApiController@getChampions');
+Route::post('/getSummonerLeagueTarget', 'ApiController@GetSummonerLeagueTarget');
+Route::post('/getRunes', 'ApiController@getRunes');
+Route::post('/getSummonerLiveGame', 'ApiController@getSummonerLiveGame');
+
+Route::post('/getLeagues', 'ApiController@getLeagues');

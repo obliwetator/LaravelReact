@@ -10,10 +10,10 @@
 			"textMateRules": [
 				{
 					"scope": [
-						"punctuation.definition.comment",
 						"comment.block",
 						"comment.line",
-						"comment.block.documentation"
+						"comment.block.documentation",
+						"comment punctuation.definition.comment",
 					],
 					"settings": {
 						"foreground": "#04b439",
@@ -24,9 +24,12 @@
 		},
 	},
 	
+	/** 
+	*
+	*/
 	"workbench.colorCustomizations": {
 		"[Material Theme Darker High Contrast]": {
-			//"sideBar.background": "#000000",
+			// "sideBar.background": "#000000",
 		}
 	},
 }

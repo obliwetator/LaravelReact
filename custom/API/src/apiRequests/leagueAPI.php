@@ -38,6 +38,7 @@ class LeagueAPI
 		SETTINGS_INIT_ONLY = [
 		];
 
+	const CACHE_DIR = __DIR__ . "/cache";
 	/**
 	 *   Contains current settings.
 	 *
@@ -52,6 +53,9 @@ class LeagueAPI
 
 	/** @var IPlatform $platforms */
 	public $platforms;
+
+	/** @var string $platforms */
+	public $region;
 	
 
 	// $assoc determined whether the array is converted to an object(false) or an assosiative array(true)
@@ -59,8 +63,6 @@ class LeagueAPI
 
 	public function __construct( array $settings )
 	{
-
-
 		//  Assigns allowed settings
 		foreach (self::SETTINGS_ALLOWED as $key)
 		if (isset($settings[$key]))
@@ -69,6 +71,8 @@ class LeagueAPI
 		$this->regions = new Region();
 
 		$this->platforms = new Platform();	
+
+		$this->region = $this->platforms->getPlatformName($this->settings[LeagueAPI::SET_REGION]);
 
 		DragonData::initByApi($this);
 
@@ -85,7 +89,7 @@ class LeagueAPI
 
 			// a string used as the subdirectory of the root cache directory, where cache
 			// items will be stored
-			$namespace = 'DataDragonAPI.cache',
+			$namespace = 'DragonDataCache',
 		
 			// the default lifetime (in seconds) for cache items that do not define their
 			// own lifetime, with a value 0 causing items to be stored indefinitely (i.e.
@@ -94,7 +98,7 @@ class LeagueAPI
 		
 			// the main cache directory (the application needs read-write permissions on it)
 			// if none is specified, a directory is created inside the system temporary directory
-			$directory = sys_get_temp_dir() . "/" . "RiotAPI"
+			$directory = self::CACHE_DIR
 		);
 
 		return $cache;
@@ -109,7 +113,7 @@ class LeagueAPI
 			$targetUrls[$key] = "https://{$region}.api.riotgames.com/lol/summoner/v4/summoners/by-account/{$summonerN}";
 		}
 
-		$data = multiCurl($region, $targetUrls, $this->assoc);
+		$data = multiCurl($this->region, $targetUrls, $this->assoc);
 		foreach ($data as $key => $value) {
 
 			$summoner[$key] = new Objects\Summoner($value);
@@ -127,14 +131,14 @@ class LeagueAPI
 
 		return $platform;
 	}
-
-	public function getSummonerNameSingle(string $summonerName)
+	/** @param string  $summonerName */
+	public function getSummonerNameSingle($summonerName)
 	{
 		$region = $this->setPlatform($this->settings[self::SET_REGION]);
 
-		$targetUrl = "https://{$region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{$summonerName}";
+		$targetUrl = "https://{$this->region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{$summonerName}";
 
-		$data = curl($region,$targetUrl, $this->assoc);
+		$data = curl($this->region, $targetUrl, $this->assoc);
 
 		if (isset($data)) {
 			$summoner = new Objects\Summoner($data);
@@ -150,14 +154,14 @@ class LeagueAPI
 
 	}
 
-	public function getSummonerId(string $region, array $summonerId): Objects\Summoner
+	public function getSummonerId(string $region, array $summonerId)
 	{
 		foreach ($summonerId as $key => $summonerN) {
 			$summonerN = str_replace(' ', '', $summonerN);
 			$targetUrls[$key] = "https://{$region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{$summonerN}";
 		}
 
-		$data = multiCurl($region, $targetUrls, $this->assoc);
+		$data = multiCurl($this->region, $targetUrls, $this->assoc);
 		foreach ($data as $key => $value) {
 
 			$summoner[$key] = new Objects\Summoner($value);
@@ -169,14 +173,14 @@ class LeagueAPI
 		return $summoner;
 	}
 
-	public function getSummonerPuuId(string $region, array $puuId): Objects\Summoner
+	public function getSummonerPuuId(string $region, array $puuId)
 	{
 		foreach ($puuId as $key => $summonerN) {
 			$summonerN = str_replace(' ', '', $summonerN);
 			$targetUrls[$key] = "https://{$region}.api.riotgames.com/lol/summoner/v4/summoners/{$summonerN}";
 		}
 
-		$data = multiCurl($region, $targetUrls, $this->assoc);
+		$data = multiCurl($this->region, $targetUrls, $this->assoc);
 		foreach ($data as $key => $value) {
 
 			$summoner[$key] = new Objects\Summoner($value);
@@ -188,14 +192,14 @@ class LeagueAPI
 		return $summoner;
 	}
 
-	public function getSummonerAccountId(string $region, array $summonerAccountId): Objects\Summoner
+	public function getSummonerAccountId(string $region, array $summonerAccountId)
 	{
 		foreach ($summonerAccountId as $key => $summonerN) {
 			$summonerN = str_replace(' ', '', $summonerN);
 			$targetUrls[$key] = "https://{$region}.api.riotgames.com/lol/summoner/v4/summoners/by-account/{$summonerN}";
 		}
 
-		$data = multiCurl($region, $targetUrls, $this->assoc);
+		$data = multiCurl($this->region, $targetUrls, $this->assoc);
 		foreach ($data as $key => $value) {
 
 			$summoner[$key] = new Objects\Summoner($value);
@@ -207,9 +211,9 @@ class LeagueAPI
 		return $summoner;
 	}
 
-	public function getMatchlist(string $region, string $accountId, int $queue = null, int $season = null, int $champion = null, int $beginTime = null, int $endTime = null, int $beginIndex = null, int $endIndex = null)
+	public function getMatchlist(string $accountId, int $queue = null, int $season = null, int $champion = null, int $beginTime = null, int $endTime = null, int $beginIndex = null, int $endIndex = null)
 	{
-		$targetUrl = "https://{$region}.api.riotgames.com/lol/match/v4/matchlists/by-account/{$accountId}";
+		$targetUrl = "https://{$this->region}.api.riotgames.com/lol/match/v4/matchlists/by-account/{$accountId}";
 		
 
 		$additionalParameters['queue'] = $queue;
@@ -220,7 +224,7 @@ class LeagueAPI
 		$additionalParameters['beginIndex'] = $beginIndex;
 		$additionalParameters['endIndex'] = $endIndex;
 
-		$data = curl($region, $targetUrl, $this->assoc, $additionalParameters);
+		$data = curl($this->region, $targetUrl, $this->assoc, $additionalParameters);
 		if (isset($data)) {
 			return new Objects\MatchList($data);
 		}
@@ -232,13 +236,13 @@ class LeagueAPI
 	/** @var Objects\MatchById[] $matchById
 	 * 	@return Objects\MatchById[]
 	 */
-	public function getMatchById(string $region, array $matchIds): array
+	public function getMatchById(array $matchIds): array
 	{		
 		foreach ($matchIds as $key => $matchId) {
-            $targetUrl[$key] = "https://{$region}.api.riotgames.com/lol/match/v4/matches/{$matchId}";
+            $targetUrl[$key] = "https://{$this->region}.api.riotgames.com/lol/match/v4/matches/{$matchId}";
 		}
 
-		$data = multiCurl($region, $targetUrl, $this->assoc);
+		$data = multiCurl($this->region, $targetUrl, $this->assoc);
 
 		foreach ($data as $key => $value) {
 			$matchById[$key] = new Objects\MatchById($value);
@@ -250,17 +254,17 @@ class LeagueAPI
 	{
 		$targetUrl = "https://{$region}.api.riotgames.com/lol/match/v4/timelines/by-match/{$matchId}";
 
-		$data = curl($region,$targetUrl, $this->assoc);
+		$data = curl($this->region, $targetUrl, $this->assoc);
 
 		return new Objects\matchTimeline($data);
 	}
 	/** Can return NULL */
-	public function getActiveMatchInfo(string $region, string $summonerId)
+	public function getActiveMatchInfo( string $summonerId)
 	{
 		//throw new Exception("Not implemented");
-		$targetUrl = "https://{$region}.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/{$summonerId}";
+		$targetUrl = "https://{$this->region}.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/{$summonerId}";
 
-		$data = curl($region,$targetUrl, $this->assoc);
+		$data = curl($this->region,$targetUrl, $this->assoc);
 
 		if (isset($data)) {
 			return new Objects\activeGame($data);
@@ -274,26 +278,26 @@ class LeagueAPI
 	{
 		$targetUrl = "https://{$region}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/{$summonerId}";
 
-		$data = curl($region,$targetUrl, $this->assoc);
+		$data = curl($this->region, $targetUrl, $this->assoc);
 
 		return new Objects\championMasteriesFrame($data);
 	}
 
-	public function getChampionMasteriesSummonerByChampion(string $region, string $summonerId, int $championId): Objects\championMasteriesByChampion
+	public function getChampionMasteriesSummonerByChampion(string $summonerId, int $championId): Objects\championMasteriesByChampion
 	{
-		$targetUrl = "https://{$region}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/{$summonerId}/by-champion/{$championId}";
+		$targetUrl = "https://{$this->region}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/{$summonerId}/by-champion/{$championId}";
 
-		$data = curl($region,$targetUrl, $this->assoc);
+		$data = curl($this->region, $targetUrl, $this->assoc);
 
 		return new Objects\championMasteriesByChampion($data);
 	}
 
 	/** Returns the sum of all mastery levels added up. Single int */
-	public function getChampionMasteriesScore(string $region, string $summonerId): int
+	public function getChampionMasteriesScore(string $summonerId): int
 	{
-		$targetUrl = "https://{$region}.api.riotgames.com/lol/champion-mastery/v4/scores/by-summoner/{$summonerId}";
+		$targetUrl = "https://{$this->region}.api.riotgames.com/lol/champion-mastery/v4/scores/by-summoner/{$summonerId}";
 
-		return curl($region, $targetUrl, $this->assoc);
+		return curl($this->region, $targetUrl, $this->assoc);
 	}
 
 	/** Valid Game Modes
@@ -307,43 +311,38 @@ class LeagueAPI
 	 *  @param mixed $region
 	 * 	@param Objects\Summoner[][] $summoners
 	 *  @return Objects\LeagueSummoner[][] */
-	public function getLeagueSummoner(string $region, array $summoners)
+	public function getLeagueSummoner(array $summoners)
 	{
 
-		foreach ($summoners as $key => $summonersGame) {
-			foreach ($summonersGame as $key2 => $summoner) {
-				$targetUrls[$key][$key2] = "https://{$region}.api.riotgames.com/lol/league/v4/entries/by-summoner/{$summoner}";
-			}
+		foreach ($summoners as $key => $summoner) {
+			$targetUrls[$key] = "https://{$this->region}.api.riotgames.com/lol/league/v4/entries/by-summoner/{$summoner}";
+		}
+		$data = multiCurl($this->region, $targetUrls, $this->assoc);
+		
 
-		}
-		foreach ($targetUrls as $key => $targetUrl) {
-			$data[$key] = multiCurl($region, $targetUrl, $this->assoc);
-		}
 		foreach ($data as $key => $value) {
 			foreach ($value as $key2 => $value2) {
-				foreach ($value2 as $key3 => $value3) {
-                    foreach ($value3 as $key4 => $value4) {
-                        if ($value4 === false || $value4 === true) {
-                            // we convert the true/false to an int
-                            $data[$key][$key2][$key3][$key4] = (int)$value4;
-                        }
+                foreach ($value2 as $key3 => $value3) {
+                    if ($value3 === false || $value3 === true) {
+                        // we convert the true/false to an int
+                        $data[$key][$key2][$key3] = (int)$value3;
                     }
-				}
+                }
 			}
 		}
+
 		if (isset($data)) {
 			foreach ($data as $key => $value) {
-				foreach ($value as $key2 => $value2) {
-					if (empty($value2)) {
-						$obj[$key][$key2] = null;
-					}
-					else{
-						foreach ($value2 as $key3 => $value3) {
-							// Name the array values after their corresponsing league to find the easier
-							$obj[$key][$key2][$value3["queueType"]] = new Objects\LeagueSummoner($value3);
-						}
+				if (empty($value)) {
+					$obj[$key] = null;
+				}
+				else{
+					foreach ($value as $key2 => $value2) {
+						// Name the array values after their corresponsing league to find the easier
+						$obj[$key][$value2["queueType"]] = new Objects\LeagueSummoner($value2);
 					}
 				}
+				
 			}
 		}
 		if (isset($obj)) {
@@ -365,11 +364,11 @@ class LeagueAPI
 	 *  @param mixed $region
 	 * 	@param Objects\Summoner[][] $summoners
 	 *  @return Objects\LeagueSummoner[][] */
-	public function getLeagueSummonerSingle(string $region,string $summoner)
+	public function getLeagueSummonerSingle(string $summoner)
 	{
-		$targetUrl = "https://{$region}.api.riotgames.com/lol/league/v4/entries/by-summoner/{$summoner}";
+		$targetUrl = "https://{$this->region}.api.riotgames.com/lol/league/v4/entries/by-summoner/{$summoner}";
 
-		$data = curl($region,$targetUrl, $this->assoc);
+		$data = curl($this->region,$targetUrl, $this->assoc);
 
 		if (empty($data)) {
 			// Returns [] (empty array)
@@ -399,11 +398,11 @@ class LeagueAPI
 	 *
 	 * @param mixed $region
 	 */
-	public function getChallengerLeagues(string $region, string $gameMode): Objects\ChallengerLeagues
+	public function getChallengerLeagues(string $gameMode): Objects\ChallengerLeagues
 	{
-		$targetUrl = "https://{$region}.api.riotgames.com/lol/league/v4/challengerleagues/by-queue/{$gameMode}";
+		$targetUrl = "https://{$this->region}.api.riotgames.com/lol/league/v4/challengerleagues/by-queue/{$gameMode}";
 
-		$data = curl($region,$targetUrl, $this->assoc);
+		$data = curl($this->region, $targetUrl, $this->assoc);
 
 		return new Objects\ChallengerLeagues($data);
 	}
@@ -416,11 +415,11 @@ class LeagueAPI
 	 *
 	 * @param string $region
 	 */
-	public function getGrandmasterLeagues(string $region, string $gameMode): Objects\ChallengerLeagues
+	public function getGrandmasterLeagues(string $gameMode): Objects\ChallengerLeagues
 	{
-		$targetUrl = "https://{$region}.api.riotgames.com/lol/league/v4/grandmasterleagues/by-queue/{$gameMode}";
+		$targetUrl = "https://{$this->region}.api.riotgames.com/lol/league/v4/grandmasterleagues/by-queue/{$gameMode}";
 
-		$data = curl($region,$targetUrl, $this->assoc);
+		$data = curl($this->region, $targetUrl, $this->assoc);
 
 		return new Objects\ChallengerLeagues($data);
 	}
@@ -437,7 +436,7 @@ class LeagueAPI
 	{
 		$targetUrl = "https://{$region}.api.riotgames.com/lol/league/v4/masterleagues/by-queue/{$gameMode}";
 
-		$data = curl($region,$targetUrl, $this->assoc);
+		$data = curl($this->region, $targetUrl, $this->assoc);
 
 		return new Objects\ChallengerLeagues($data);
 	}
@@ -457,7 +456,7 @@ class LeagueAPI
 		$targetUrl = "https://{$region}.api.riotgames.com/lol/league/v4/entries/{$gameMode}/{$division}/{$tier}";
 
 		$additionalParameters['page'] = $page;
-		$data = curl($region, $targetUrl, $this->assoc, $additionalParameters);
+		$data = curl($this->region, $targetUrl, $this->assoc, $additionalParameters);
 
 		if (isset($data)) {
 			foreach ($data as $key => $value) {
@@ -475,20 +474,16 @@ class LeagueAPI
 	{
 		$targetUrl = "https://{$region}.api.riotgames.com/lol/league/v4/leagues/{$leagueId}";
 
-		$data = curl($region,$targetUrl, $this->assoc);
+		$data = curl($this->region, $targetUrl, $this->assoc);
 
 		return new Objects\ChallengerLeagues($data);
 	}
 
 	// STATIC DATA CALLS
-	public function getStaticChampions(bool $data_by_key = null, string $locale = 'en_GB', string $version = null): StaticData\StaticChampionList
+	public function getStaticChampions(bool $data_by_key = true, string $locale = 'en_GB', string $version = null): StaticData\StaticChampionList
 	{
-		// Fetch StaticData from JSON files
-		if ($data_by_key) {
-			$data = DragonData::getStaticChampionsWithKeys($locale, $version);
-		} else {
-			$data = DragonData::getStaticChampions($locale, $version);
-		}
+		$data = DragonData::getStaticChampions($locale, $version, $data_by_key);
+
 		// Create missing data
 		$data['keys'] = array_map(function ($d) use ($data_by_key) {
 			return $data_by_key
@@ -505,7 +500,6 @@ class LeagueAPI
 		// $version/data/$locale/champion.json
 		// champion.json (less detailed version)
 		// We grab the whole json(as an array) and then we will search for the specified champion ID and return the appropriate array
-		$d = new DragonData();
 		$data = DragonData::getStaticChampionDataById($championId, $locale, $version);
 		if (true == $details) {
 			// We have the champion data. With the champion name we grab the detailed champion file
@@ -544,7 +538,6 @@ class LeagueAPI
 	public function getStaticProfileIcons(string $locale = 'en_GB', string $version = null): StaticData\StaticProfileIconData
 	{
 		$data = DragonData::getStaticProfileIcons($locale, $version);
-
 		return new StaticData\StaticProfileIconData($data);
 	}
 
@@ -591,14 +584,9 @@ class LeagueAPI
 	 *
 	 * $key value determines whether we get an array that indexes the Summoner Spells by their ID or their name. Default is ID
 	 */
-	public function getStaticSummonerSpells(string $locale = 'en_GB', string $version = null, $key = true) : StaticData\StaticSummonerSpellList
+	public function getStaticSummonerSpells(bool $data_by_key = true ,string $locale = 'en_GB', string $version = null) : StaticData\StaticSummonerSpellList
 	{
-		// We alter the array to be able to search by spell ID. Makes things much easier.
-		if (true == $key) {
-			$data = DragonData::getStaticSummonerSpellsWithKeys($locale, $version);
-		} else {
-			$data = DragonData::getStaticSummonerSpells($locale, $version);
-		}
+		$data = DragonData::getStaticSummonerSpells($locale, $version, $data_by_key);
 		return new StaticData\StaticSummonerSpellList($data);
 	}
 
@@ -636,7 +624,7 @@ class LeagueAPI
 	 */
     public function getStaticRealm(): StaticRealm
     {
-	    $result = false;
+		$result = false;
 		// Fetch StaticData from JSON files
 		$result = DragonData::getStaticRealms($this->settings[self::SET_REGION]);
 

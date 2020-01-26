@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use API\LeagueAPI\LeagueAPI;
 use API\dbCall\dbCall;
-use API\DragonData\DragonData;
+use API\LeagueAPI\Definitions\IPlatform;
+use API\LeagueAPI\Definitions\IRegion;
 use API\LeagueAPI\Definitions\Platform;
 use API\LeagueAPI\Definitions\Region;
+use Exception;
 use Illuminate\Http\Request;
 
 class ApiController extends Controller
@@ -26,12 +28,11 @@ class ApiController extends Controller
 		    self::GET_ICONS,
             self::GET_SUMMONERSPELLS,
             self::GET_REGION,
-	    ];
+        ];
     /**
      * @var LeagueAPI $api
      */
     private $LeagueAPI;
-
     /**
      * @var dbCall $db
      */
@@ -41,34 +42,43 @@ class ApiController extends Controller
 	public $regions;
 
 	/** @var IPlatform $platforms */
-	public $platforms;
+    public $platforms;
+    
+    /** @var string $region */
+    public $region;
 	
 
     public function __construct(Request $name)
     {
+        $this->regions = new Region();
+        $this->platforms = new Platform();
+        
         if (null !== $name->get("region")) {
             $region = $name->get("region");
-            // dd($region);
+            $this->region = $this->regions->getRegionName($region);
         }
-
-        $this->regions = new Region();
-
-		$this->platforms = new Platform();	 
+        else{
+            throw new Exception("region not set");
+        }
     }
-    private function LeagueAPI($region)
+    private function LeagueAPI()
     {
-        $this->LeagueAPI = new LeagueAPI([
-            LeagueAPI::SET_REGION => Region::EUROPE_EAST,
-        ]);
-
+        if (is_null($this->LeagueAPI)) {
+            $this->LeagueAPI = new LeagueAPI([
+                LeagueAPI::SET_REGION => $this->region,
+            ]);
+        }
+        
         return $this->LeagueAPI;
     }
 
-    private function LeagueDB($region)
+    private function LeagueDB()
     {
-        $this->LeagueDB = new dbCall([
-            dbCall::SET_REGION => Region::EUROPE_EAST
-        ]);
+        if (is_null($this->LeagueDB)) {
+            $this->LeagueDB = new dbCall([
+                dbCall::SET_REGION => $this->region
+            ]);
+        }
 
         return $this->LeagueDB;
     }
@@ -83,79 +93,110 @@ class ApiController extends Controller
         return $region;
     }
 
-    public function Summoner(Request $name)
+    public function Summoner(Request $request)
 	{
-        
-		clock()->startEvent("SummonerController", "Time spent in summoner controller");
-		$summonerName = $name->get("name");
-        $region = $name->get("region");
 
+        $summonerName = $request->get("name");
+        // Temp Limit on how many games we request
+        $limit = 2;
 
 		// If no username is entered return 404
 		if (!isset($summonerName)) {
 			return abort(404);
 		}
+		$summoner = $this->LeagueDB()->getSummoner($summonerName);
 
-		clock()->startEvent("GetDbSummoner", "Load Summoner from db");
-		$summoner = $this->LeagueDB($region)->getSummoner($region, $summonerName);
-		clock()->endEvent("GetDbSummoner");
 		if (isset($summoner)) {
-
+            $matchlist = $this->LeagueDB()->getMatchlist($summoner->accountId, $limit);
 		}
 		else{
             return response()->json("Not Found", 404);
         }
-		return response()->json($summoner);
+
+        if (isset($matchlist)) {
+			$matchById = $this->LeagueDB()->getMatchById($matchlist);
+		}
+		else{
+			$matchById = null;
+		}
+        return response()->json([
+            'summoner' => $summoner,
+            'matchlist' => $matchlist->matches,
+            'gamesById' => $matchById,
+            ]);
 
     }
     
-    public function getIcons(Request $request)
+    public function GetSummonerLeagueTarget(Request $request)
     {
-        $region = $this->handleRequest($request);
+		$summonerId = $request->get("summonerId");
 
-        clock()->startEvent("getStaticProfileIcons", "getStaticProfileIcons");
-		$icons = $this->LeagueAPI($region)->getStaticProfileIcons();
-        clock()->endEvent("getStaticProfileIcons");
+        $summonerLeagueTarget = $this->LeagueDB()->getLeagueSummonerSingle($summonerId);
+
+		return response()->json($summonerLeagueTarget);
+    }
+
+    public function getSummonerLiveGame(Request $request)
+	{
+		$summonerId = $request->get("summonerId");
+
+		$activeGame = $this->LeagueAPI()->getActiveMatchInfo($summonerId);
+		// If the summoner is not in a game return a view that says so.
+		if (!isset($activeGame)) {
+            return response()->json("null");
+		}
+
+        return response()->json($activeGame);
+    }
+    
+    public function getLeagues(Request $request)
+    {
+        $names = $request->get("summoners");
+        if (is_null($names)) {
+            return 0;
+        }
+
+        foreach ($names as $key => $value) {
+            $summonerIds[$key] = $value["summonerId"]; 
+        }
+
+		$summonerLeague = $this->LeagueDB()->getLeagueSummoner($summonerIds);
+
+        return response()->json($summonerLeague);
+    }
+
+    // Static Endpoints
+    public function getIcons()
+    {
+        ob_start('ob_gzhandler');
+
+		$icons = $this->LeagueAPI()->getStaticProfileIcons();
         
         return response()->json($icons);
     }
-    public function getSummonerSpells(Request $request)
+    public function getSummonerSpells()
     {
-        $region = $this->handleRequest($request);
-        
-        clock()->startEvent("getStaticSummonerSpells", "getStaticSummonerSpells");
-		$summonerSpells = $this->LeagueAPI($region)->getStaticSummonerSpells();
-		clock()->endEvent("getStaticSummonerSpells");
+        $summonerSpells = $this->LeagueAPI()->getStaticSummonerSpells();
 
 		return response()->json($summonerSpells);
     }
-    public function getChampions(Request $request)
+    public function getChampions()
     {
-        $region = $this->handleRequest($request);
-
-        clock()->startEvent("getStaticChampions", "getStaticChampions");
-		$staticChampions  =  $this->LeagueAPI($region)->getStaticChampions(true, );
-		clock()->endEvent("getStaticChampions");
+		$staticChampions = $this->LeagueAPI()->getStaticChampions();
 
         return response()->json($staticChampions);
     }
-    public function getItems(Request $request)
+    public function getItems()
     {
-        $region = $this->handleRequest($request);
+        // ob_start('ob_gzhandler');
 
-        clock()->startEvent("getStaticItems", "getStaticItems");
-		$staticItems = $this->LeagueAPI($region)->getStaticItems();
-		clock()->endEvent("getStaticItems");
+		$staticItems = $this->LeagueAPI()->getStaticItems();
          
         return response()->json($staticItems);
     }
-    public function getRunes(Request $request)
+    public function getRunes()
     {
-        $region = $this->handleRequest($request);
-    
-        clock()->startEvent("getStaticRunesReforged", "getStaticRunesReforged");
-		$staticRunes = $this->LeagueAPI($region)->getStaticRunesReforged();
-		clock()->endEvent("getStaticRunesReforged");
+		$staticRunes = $this->LeagueAPI()->getStaticRunesReforged();
         
         return response()->json($staticRunes);
     }
