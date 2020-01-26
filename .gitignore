@@ -3,6 +3,8 @@
 /public/storage
 /public/lolContent
 /public/img
+/public/js
+
 /storage/*.key
 /vendor
 
@@ -19,5 +21,3 @@ dbConnect.php
 
 /custom/API/src/apiRequests/cache
 /custom/API/src/DragonData/DragonCache
-
-/public/js
