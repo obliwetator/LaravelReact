@@ -14,6 +14,7 @@ export class Summary extends React.Component {
 
     }
 
+    
     componentDidMount() {
         // [0] = WIN, [1] = LOSS
         let WinLoss = [0,0]
