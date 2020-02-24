@@ -234,12 +234,13 @@ export default class Summoner extends Component {
               <Tabs onSelect={this.handleTab} activeKey={this.state.currentTab} id="uncontrolled-tab-example">
                 <Tab eventKey="summary" title="Summary">
                   <Summary 
-                  summoner = {this.state[this.state.summonerName].summoner}
-                  gamesById = {this.state[this.state.summonerName].gamesById}
-                  champions = {this.state.champions}
-                  summonerSpells = {this.state.summonerSpells}
-                  items = {this.state.items}
-                  {...this.state["summonerLeagueTarget" + this.state.summonerName]}
+                    runes = {this.state.runes}
+                    summoner = {this.state[this.state.summonerName].summoner}
+                    gamesById = {this.state[this.state.summonerName].gamesById}
+                    champions = {this.state.champions}
+                    summonerSpells = {this.state.summonerSpells}
+                    items = {this.state.items}
+                    {...this.state["summonerLeagueTarget" + this.state.summonerName]}
                   />
                 </Tab>
                 <Tab eventKey="champions" title="Champions">

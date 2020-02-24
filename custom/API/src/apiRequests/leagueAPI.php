@@ -569,6 +569,12 @@ class LeagueAPI
 
 		$r = [];
 		foreach ($data as $path) {
+			$r[$path['id']] = [
+				'key' => $path['key'], 
+				'icon' => $path['icon'], 
+				'name' => $path['name'] 
+				];
+
 			foreach ($path['slots'] as $slot) {
 				foreach ($slot['runes'] as $item) {
 					$r[$item['id']] = $item;
@@ -576,7 +582,6 @@ class LeagueAPI
 			}
 		}
 		$data = ['runes' => $r];
-
 
 		return new StaticData\StaticRunesReforgedList($data);
 	}

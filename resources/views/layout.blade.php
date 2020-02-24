@@ -46,7 +46,7 @@
 	<script src={{ mix('/js/app.js') }}></script>
 
 	{{-- Custom js the will be used across all pages --}}
-	<script src="{{ asset('js/custom/js.js')}}"></script>
+	{{-- <script src="{{ asset('js/custom/js.js')}}"></script> --}}
 	@yield('js')
 	{{-- Here will go custom js from different views --}}
 </html>

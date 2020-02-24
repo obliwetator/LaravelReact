@@ -1,272 +1,278 @@
 import React, { Component } from "react";
+import Image from 'react-bootstrap/Image'
 
-export default class IndividualGame extends Component{
-    constructor(props){
-        super(props)
+export default class IndividualGame extends Component {
+	constructor(props) {
+		super(props)
 
-        this.state = {
+		this.state = {
 
-        }
-    }
+		}
+	}
 
-    componentDidMount() {
+	componentDidMount() {
+		console.log("individual game content" ,this.props)
+	}
 
-    }
+	componentDidUpdate() {
 
-    componentDidUpdate() {
+	}
 
-    }
-
-    render() {
-        if (condition) {
-            return <IndividualGameContent/>;
-        }
-    }
+	render() {
+		return <IndividualGameContent {...this.props}/>;
+	}
 }
 
 function IndividualGameContent(props) {
-    return (
-        <div class="MatchDetailLayout">
-	<div class="MatchDetailHeader">
-		<ul class="nav nav-tabs">
-			<li class="test nav-link active" data-tab-show-class="Overview">
-				<a href>Overview</a>
-			</li>
-			<li class="test nav-link" data-tab-show-class="TeamAnalysis">
-				<a href>Team analysis</a>
-			</li>
-			<li class="test nav-link" data-tab-show-class="Builds">
-				<a href>Builds</a>
-			</li>
-			<li class="test nav-link" data-tab-show-class="etc">
-				<a href>etc</a>
-			</li>
-		</ul>
-	</div>
-	<div class="MatchDetailContent tab-content"> 
-		{/* Those divs correspond to the <ul> above */}
-		<div class="Overview tab-pane active">
-					<div class="GameDetailWrap">
-				    {/* The team that the searched summoner is search should always be in the first table. */}
-					<table class="GameDetailTable Win">
-						<colgroup>
-							<col class="ChampionImage" style="width: 38px"></col>
-							<col class="SummonerSpell" style="width: 38px"></col>
-							{/* @isset($matchById[0]->participants[0]->stats->perk0) */}
-							<col class="Runes" style="width: 38px"></col>
-							{/* @endisset */}
-							<col class="SummonerName" style="width: 140px"></col>
-							<col class="Tier" style="width: 140px"></col>
-							<col class="KDA" style="width: 80px"></col>
-							<col class="Damage" style="width: 110px"></col>
-							<col class="Ward" style="width: 60px"></col>
-							<col class="CS" style="width: 60px"></col>
-							<col class="Items" style="width: 200px"></col>
-						</colgroup>
-						<thead class="Header">
-							<tr>
-								{/* @if (isset($matchById[0]->participants[0]->stats->perk0)) */}
-									<th colspan="4">
-										<span>Victory?</span>
-										<span>Team color</span>
-									</th>
-								{/* @else */}
-									<th colspan="3">
-										<span>Victory?</span>
-										<span>Team color</span>
-									</th>
-								{/* @endif */}
-								<th>Tier</th>
-								<th>KDA</th>
-								<th>Damage</th>
-								<th>Wards</th>
-								<th>CS</th>
-								<th>Items</th>
-							</tr>
-						</thead>
-						<tbody>
-							{/* @for ($i = 0; $i < sizeof($matchById[0]->participants)/2; $i++) */}
+	let runes
+	if (props.match.participants[0].stats.perk0) {
+		runes = <col className="Runes" style={{ width: 38}}></col>
+	}
+	else{
+		runes = <></>
+	}
+	return (
+		<div className="MatchDetailLayout">
+			<div className="MatchDetailHeader">
+				<ul className="nav nav-tabs">
+					<li className="test nav-link active">
+						<span>Overview</span>
+					</li>
+					<li className="test nav-link">
+						<span>Team analysis</span>
+					</li>
+					<li className="test nav-link" >
+						<span>Builds</span>
+					</li>
+					<li className="test nav-link">
+						<span>etc</span>
+					</li>
+				</ul>
+			</div>
+			<div className="MatchDetailContent tab-content">
+				{/* Those divs correspond to the <ul> above */}
+				<div className="Overview tab-pane active">
+					<div className="GameDetailWrap">
+						{/* The team that the searched summoner is search should always be in the first table. */}
+						<table className="GameDetailTable Win">
+							<colgroup>
+								<col className="ChampionImage" style={{ width: 38}}></col>
+								<col className="SummonerSpell" style={{ width: 38}}></col>
+								{props.match.participants[0].stats.perk0 &&
+								<col className="Runes" style={{ width: 38}}></col>
+								}
+								<col className="SummonerName" style={{ width: 140}}></col>
+								<col className="Tier" style={{ width: 140}}></col>
+								<col className="KDA" style={{ width: 80}}></col>
+								<col className="Damage" style={{ width: 110}}></col>
+								<col className="Ward" style={{ width: 60}}></col>
+								<col className="CS" style={{ width: 38}}></col>
+								<col className="Items" style={{ width: 200}}></col>
+							</colgroup>
+							<thead className="Header">
 								<tr>
-									<td class="ChampionImage">
-										<a href="/champions/{{ $champions->data[$matchById[0]->participants[$i]->championId]->name }}/statistics" target="_blank" style="position: relative;">
-                                            <Image/>
-											<div class="LevelTable" style="position: absolute"></div>
+									{props.match.participants[0].stats.perk0 ?
+										<th colSpan="4">
+										<span>Victory?</span>
+										<span>Team color</span>
+									</th>
+									: 
+									<th colSpan="3">
+										<span>Victory?</span>
+										<span>Team color</span>
+									</th>
+									}
+									<th>Tier</th>
+									<th>KDA</th>
+									<th>Damage</th>
+									<th>Wards</th>
+									<th>CS</th>
+									<th>Items</th>
+								</tr>
+							</thead>
+							<tbody>
+								{/* @for ($i = 0; $i < sizeof($matchById[0]->participants)/2; $i++) */}
+								<tr>
+									<td className="ChampionImage">
+										<a href="/champions/{{ $champions->data[$matchById[0]->participants[$i]->championId]->name }}/statistics" target="_blank">
+											<Image />
+											<div className="LevelTable"></div>
 										</a>
 									</td>
-									<td class="SummonerSpell">
-										<div class="Spell">	
-                                            <Image/>
+									<td className="SummonerSpell">
+										<div className="Spell">
+											<Image />
 										</div>
-										<div class="Spell" >
-                                            <Image/>
-                                        </div>
+										<div className="Spell" >
+											<Image />
+										</div>
 									</td>
-									{/* Fix if game was not played with new rune system TOD */}
-									{/* @isset($matchById[0]->participants[$i]->stats->perk0) */}
-									<td class="Rune">
-										<div class="Rune">
+
+									{props.match.participants[0].stats.perk0 &&
+										<td className="Rune">
+										<div className="Rune">
 											{/* Zero index is Keystone */}
-                                                <Image/>
-											</div>
-										<div class="Rune">
-                                            <Image/>
-                                        </div>
-									</td>	
-									{/* @endisset */}
-									<td class="SummonerName">
+											<Image />
+										</div>
+										<div className="Rune">
+											<Image />
+										</div>
+									</td>
+									}
+									<td className="SummonerName">
 										<a href='/summoner?name={{ $sumonerNameObj[0][$i]}}'></a>
 									</td>
-									<td class="Tier">
+									<td className="Tier">
 										{/* @if (isset($summonerLeague[0][$i]["RANKED_SOLO_5x5"])) */}
-											<div></div>
+										<div></div>
 										{/* @else */}
-											<div>Unranked</div>
+										<div>Unranked</div>
 										{/* @endif */}
 									</td>
-									<td class="KDA">
+									<td className="KDA">
 										{/* @if ($matchById[0]->participants[$i]->stats->deaths == 0) */}
-											<span class="KdaRation"></span> KDA
-										{/* @else */}
-											<span class="KdaRation"></span> KDA
-										{/* @endif */}
+										<span className="KdaRation"></span> KDA
+									{/* @else */}
+										<span className="KdaRation"></span> KDA
+									{/* @endif */}
 									</td>
-									<td class="Dammage">Dmg: </td>
-									<td class="Wards">CW </td>
-									<td class="CS">
-										<div class="CS">
-											
-                                        </div>
-										<div class="CSperMin">
-											
-                                        </div>
-									 </td>
-									<td class="ItemBlock">
+									<td className="Dammage">Dmg: </td>
+									<td className="Wards">CW </td>
+									<td className="CS">
+										<div className="CS">
+
+										</div>
+										<div className="CSperMin">
+
+										</div>
+									</td>
+									<td className="ItemBlock">
 										{/* @for ($j = 0; $j < 7; $j++) */}
-										<div class="Item" style="display: inline-block">
-                                            <Image/>											
-                                        </div>
+										<div className="Item">
+											<Image />
+										</div>
 									</td>
 								</tr>
-							{/* @endfor */}
-						</tbody>	
-					</table>
-					<div class="Summary">
-							<hr class="bg-success"/>
-								Here goes some summary that applies to both sides
-							<hr class="bg-success"/>	
-					</div>
-					<table class="GameDetailTable Lose">
-						<colgroup>
-							<col class="ChampionImage" style="width: 38px"/>
-							<col class="SummonerSpell" style="width: 38px"/>
-							@isset($matchById[0]->participants[0]->stats->perk0)
-							<col class="Runes" style="width: 38px"/>
-							@endisset
-							<col class="SummonerName" style="width: 140px"/>
-							<col class="Tier" style="width: 140px"/>
-							<col class="KDA" style="width: 80px"/>
-							<col class="Damage" style="width: 110px"/>
-							<col class="Ward" style="width: 60px"/>
-							<col class="CS" style="width: 60px"/>
-							<col class="Items" style="width: 200px"/>
-						</colgroup>
-						<thead class="Header">
-							<tr>
-								{/* @if (isset($matchById[0]->participants[0]->stats->perk0)) */}
-									<th colspan="4">
-										<span>Victory?</span>
-										<span>Team color</span>
-									</th>
-								{/* @else */}
-									<th colspan="3">
-										<span>Victory?</span>
-										<span>Team color</span>
-									</th>
-								{/* @endif */}
-								<th>Tier</th>
-								<th>KDA</th>
-								<th>Damage</th>
-								<th>Wards</th>
-								<th>CS</th>
-								<th>Items</th>
-							</tr>
-						</thead>
-						<tbody>
-							{/* @for ($i; $i < sizeof($matchById[0]->participants); $i++) */}
+								{/* @endfor */}
+							</tbody>
+						</table>
+						<div className="Summary">
+							<hr className="bg-success" />
+							Here goes some summary that applies to both sides
+						<hr className="bg-success" />
+						</div>
+						<table className="GameDetailTable Lose">
+							<colgroup>
+							<col className="ChampionImage" style={{ width: 38}}></col>
+								<col className="SummonerSpell" style={{ width: 38}}></col>
+								{props.match.participants[0].stats.perk0 &&
+								<col className="Runes" style={{ width: 38}}></col>
+								}
+								<col className="SummonerName" style={{ width: 140}}></col>
+								<col className="Tier" style={{ width: 140}}></col>
+								<col className="KDA" style={{ width: 80}}></col>
+								<col className="Damage" style={{ width: 110}}></col>
+								<col className="Ward" style={{ width: 60}}></col>
+								<col className="CS" style={{ width: 38}}></col>
+								<col className="Items" style={{ width: 200}}></col>
+							</colgroup>
+							<thead className="Header">
 								<tr>
-									<td class="ChampionImage">
-										<a href="/champions/{{ $champions->data[$matchById[0]->participants[$i]->championId]->name }}/statistics" target="_blank" style="position: relative;">
-                                            <Image/>
-                                            <div class="LevelTable" style="position: absolute"></div>
+									{props.match.participants[0].stats.perk0 ?
+										<th colSpan="4">
+										<span>Victory?</span>
+										<span>Team color</span>
+									</th>
+									: 
+									<th colSpan="3">
+										<span>Victory?</span>
+										<span>Team color</span>
+									</th>
+									}
+									<th>Tier</th>
+									<th>KDA</th>
+									<th>Damage</th>
+									<th>Wards</th>
+									<th>CS</th>
+									<th>Items</th>
+								</tr>
+							</thead>
+							<tbody>
+								{/* @for ($i; $i < sizeof($matchById[0]->participants); $i++) */}
+								<tr>
+									<td className="ChampionImage">
+										<a href="/champions/{{ $champions->data[$matchById[0]->participants[$i]->championId]->name }}/statistics" target="_blank">
+											<Image />
+											<div className="LevelTable"></div>
 										</a>
 									</td>
-									<td class="SummonerSpell">
-										<div class="Spell">	
-											<Image/>
-                                        </div>
-										<div class="Spell" >
-										    <Image/>
-                                        </div>
+									<td className="SummonerSpell">
+										<div className="Spell">
+											<Image />
+										</div>
+										<div className="Spell" >
+											<Image />
+										</div>
 									</td>
-									{/* @isset($matchById[0]->participants[$i]->stats->perk0) */}
-									<td class="Rune">
-										<div class="Rune">
+									{props.match.participants[0].stats.perk0 &&
+										<td className="Rune">
+										<div className="Rune">
 											{/* Zero index is Keystone */}
-											<Image/>
-                                        </div>
-										<div class="Rune">
-											<Image/>
-                                        </div>
-									</td>	
-									{/* @endisset */}
-									<td class="SummonerName">
+											<Image />
+										</div>
+										<div className="Rune">
+											<Image />
+										</div>
+									</td>
+									}
+									<td className="SummonerName">
 										<a href='/summoner?name={{ $sumonerNameObj[0][$i] }}'></a>
 									</td>
-									<td class="Tier">
+									<td className="Tier">
 										{/* @if (isset($summonerLeague[0][$i]["RANKED_SOLO_5x5"])) */}
-											<div></div>
+										<div></div>
 										{/* @else */}
-											<div>Unranked</div>
+										<div>Unranked</div>
 										{/* @endif */}
 									</td>
-									<td class="KDA">
+									<td className="KDA">
 										{/* @if ($matchById[0]->participants[$i]->stats->deaths == 0) */}
-											<span class="KdaRation"></span>KDA
-										{/* @else */}
-											<span class="KdaRation"></span>KDA
-										{/* @endif */}
+										<span className="KdaRation"></span>KDA
+									{/* @else */}
+										<span className="KdaRation"></span>KDA
+									{/* @endif */}
 									</td>
-									<td class="Dammage">Dmg: </td>
-									<td class="Wards">CW </td>
-									<td class="CS">
-										<div class="CS">
-											
+									<td className="Dammage">Dmg: </td>
+									<td className="Wards">CW </td>
+									<td className="CS">
+										<div className="CS">
+
 										</div>
-										<div class="CSperMin">
-											
+										<div className="CSperMin">
+
 										</div>
 									</td>
-									<td class="ItemBlock">
+									<td className="ItemBlock">
 										{/* @for ($j = 0; $j < 7; $j++) */}
-										<div class="Item" style="display: inline-block">
-										    <Image/>	
-                                        </div>
+										<div className="Item">
+											<Image />
+										</div>
 									</td>
 								</tr>
-						</tbody>																			
-					</table>
+							</tbody>
+						</table>
 					</div>
+				</div>
+				<div className="TeamAnalysis tab-pane">
+					<p>Team Analysis</p>
+				</div>
+				<div className="Builds tab-pane">
+					<p>Builds</p>
+				</div>
+				<div className="etc tab-pane">
+					<p>Etc</p>
+				</div>
+			</div>
 		</div>
-		<div class="TeamAnalysis tab-pane">
-			<p>Team Analysis</p>
-		</div>
-		<div class="Builds tab-pane">
-			<p>Builds</p>
-		</div>
-		<div class="etc tab-pane">
-			<p>Etc</p>
-		</div>
-	</div>
-</div>
-    )
+	)
 }
