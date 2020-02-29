@@ -1,7 +1,6 @@
 import React, {Component, useCallback} from 'react'
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router } from "react-router-dom";
-import {useDropzone} from 'react-dropzone'
 import Axios from 'axios';
 // import 'react-dropzone-uploader/dist/styles.css'
 // import Dropzone from 'react-dropzone-uploader'
@@ -19,7 +18,6 @@ export default class Index extends Component {
 		document.title = 'Welcome';
 	}
 
-	
 	handleDragEnter = (e) => {
 		e.preventDefault();
 		e.stopPropagation();
