@@ -51,7 +51,6 @@ export default class LiveGame extends Component {
         })
         .catch((error) => {
             // handle error
-            console.log(error);
         })
     }
     
@@ -69,13 +68,10 @@ export default class LiveGame extends Component {
         })
         .catch((error) => {
             // handle error
-            console.log(error);
         })
     }
 
     render() {
-        console.log("live game state", this.state)
-        
         if (this.props.tabs == "LiveGame") {
             if (this.state.isLoaded) {
                 if (this.state.activeGame !== "null" && this.state.summonerLeagues) {
@@ -118,7 +114,6 @@ export default class LiveGame extends Component {
 }
 
 function LiveGameContent(props) {
-    console.log("live game content props", props)
     const activeGame = props.activeGame
     return (
         <div className="Spectate box">
@@ -199,7 +194,6 @@ function TableHead(props) {
 }
 
 function TableContent(props) {
-    console.log("props table content", props)
     let body = props.activeGame.participants.map((participant, i) => {
         return(
              // LOOP dependign on summoner ammount

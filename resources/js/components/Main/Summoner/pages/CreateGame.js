@@ -113,8 +113,6 @@ export default class CreateGame extends Component {
                 this.state.target = j
             }
         })
-        console.log("Cretate game state", this.state)
-        console.log("Create game props", this.props)
         return (
             <div className="GameItemWrap">
                 <div>Game ID: {this.props.match.gameId} (temp)</div>

@@ -108,22 +108,21 @@ export default class Summoner extends Component {
       this.GetChampions(),
       this.GetRunes(),
     ])
-      .then(axios.spread((Data, Items, Icons, SummonerSpells, Champions, Runes) => {
+      .then(axios.spread((Summoner, Items, Icons, SummonerSpells, Champions, Runes) => {
         if (this._isMounted) {
           this.setState({
-            [Data.data.summoner.name.replace(/\s/g, '').toLowerCase()]: Data.data,
-            summonerName: Data.data.summoner.name.replace(/\s/g, '').toLowerCase(),
+            [Summoner.data.summoner.name.replace(/\s/g, '').toLowerCase()]: Summoner.data,
+            summonerName: Summoner.data.summoner.name.replace(/\s/g, '').toLowerCase(),
             items: Items.data,
             icons: Icons.data,
             summonerSpells: SummonerSpells.data,
             champions: Champions.data,
             runes: Runes.data,
           })
-          
           axios.all([
-            this.GetSummonerLeagueTarget(Data.data.summoner)
+            this.GetSummonerLeagueTarget(Summoner.data.summoner)
           ]).then(axios.spread((SummonerLeagueTarget) =>{
-            let property = "summonerLeagueTarget" + Data.data.summoner.name.replace(/\s/g, '').toLowerCase()
+            let property = "summonerLeagueTarget" + Summoner.data.summoner.name.replace(/\s/g, '').toLowerCase()
 
             this.setState({
               [property]: SummonerLeagueTarget.data,
@@ -135,7 +134,7 @@ export default class Summoner extends Component {
             })
           })
           
-          document.title = Data.data.summoner.name
+          document.title = Summoner.data.summoner.name
         }
       }))
       .catch((error) => {
@@ -150,14 +149,13 @@ export default class Summoner extends Component {
     let prevSearch = prevProps.match.params.name;
     let newSearch = this.props.match.params.name;
 
-
     if (prevSearch !== newSearch) {
-
       // When we search for a new summoner we save they summoner details in the state.
       // If we search for a new summoner or go back/formward in history we will check the state first before calling the server
-      if (this.props.match.params.name && this.state[this.props.match.params.name]) {
+      let name = this.props.match.params.name.replace(/\s/g, '')
+      if (name && this.state[name]) {
         // We update which summoner we are currently viewing. The summoner object with the same name should be in the state
-        this.setState({ summonerName: this.props.match.params.name })
+        this.setState({ summonerName: this.props.match.params.name.replace(/\s/g, '') })
       }
       else {
         // Will only refresh if the input is different from the previous
@@ -197,6 +195,8 @@ export default class Summoner extends Component {
           })
       }
     }
+    else{
+    }
   }
 
   handleTab = (event) => {
@@ -206,7 +206,6 @@ export default class Summoner extends Component {
 }
 
   render() {
-    console.log("Summoner", this.state)
     // const { error, isLoaded, summonerName } = this.state
     if (this.state.error) {
       return <NotFound error={this.state.error} />
