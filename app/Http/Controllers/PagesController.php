@@ -5,17 +5,39 @@ namespace App\Http\Controllers;
 use API\LeagueAPI\LeagueAPI;
 use API\dbCall\dbCall;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PagesController extends Controller
 {
+	public function test(Request $request)
+	{
+		if ($url = $request->input('url')) {
+			$name = md5($url).".png";
+			// $name = explode("/" , $url);
+			// check if image exists
+			if (Storage::exists("files/$name.png")) {
+				return response()->json("Already exists");
+			}
+			$contents = file_get_contents($url);
+			Storage::disk('local')->put("files/$name.png", $contents);
+
+			$path = Storage::disk('local')->path("files/$name.png");
+			return response()->file($path, ['Content-Type' => 'image/jpeg']);
+		}
+		else {
+			$uploadedFile = $request->file('file');
+			Storage::disk('local')->put('files/', $uploadedFile);
+		}
+		return response()->json("ok");
+	}
+	public function upload()
+	{
+		return view ('upload');
+	}
+
 	public function home()
 	{
 		return view('welcome');
-	}
-
-	public function test()
-	{
-		return view('test');
 	}
 
 	public function report()
@@ -25,7 +47,6 @@ class PagesController extends Controller
 
 	public function Summoner(Request $name)
 	{
-		clock()->startEvent("SummonerController", "Time spent in summoner controller");
 		$summonerName = $name->get("name");
 		$region = $name->get("region");
 
@@ -44,61 +65,31 @@ class PagesController extends Controller
 		$version = '9.17.1';
 		$limit = 2;
 
-
-		clock()->startEvent("GetDbSummoner", "Load Summoner from db");
 		$summoner = $db->getSummoner($region, $summonerName);
-		clock()->endEvent("GetDbSummoner");
+
 		if (isset($summoner)) {
 			
 		}
 		else{
 			return abort(404);
 		}
-		clock()->startEvent("GetDbMatchlist", "Load Matchlist from db");
 		// TODO: Store NULL matchlist in DB so that we wont reuqry the api every time (low priority)
 		$matchlist = $db->getMatchlist($region, $summoner->accountId, $limit);
-		clock()->endEvent("GetDbMatchlist");
 		
-
-
-		
-		clock()->startEvent("getStaticData", "Load all the static data");
-
 		// Load all static data for that specific page?
-		clock()->startEvent("getStaticProfileIcons", "getStaticProfileIcons");
 		$icons = $lol->getStaticProfileIcons($locale, $version);
-		clock()->endEvent("getStaticProfileIcons");
 
-		clock()->startEvent("getStaticSummonerSpells", "getStaticSummonerSpells");
 		$summonerSpells = $lol->getStaticSummonerSpells($locale, $version);
-		clock()->endEvent("getStaticSummonerSpells");
 
-		clock()->startEvent("getStaticChampions", "getStaticChampions");
 		$staticChampions  =  $lol->getStaticChampions(true, $locale, $version);
-		clock()->endEvent("getStaticChampions");
-
-		clock()->startEvent("getStaticItems", "getStaticItems");
 		$staticItems =  $lol->getStaticItems($locale, $version);
-		clock()->endEvent("getStaticItems");
-
-		clock()->startEvent("getStaticRunesReforged", "getStaticRunesReforged");
 		$staticRunes = $lol->getStaticRunesReforged($locale, $version);
-		clock()->endEvent("getStaticRunesReforged");
-
-
-		clock()->endEvent("getStaticData");
-
-
-		clock()->startEvent("getMatchbyId", "Load Match by id from Db");
 		if (isset($matchlist)) {
 			$matchById = $db->getMatchById($region, $matchlist);
 		}
 		else{
 			$matchById = null;
 		}
-		clock()->endEvent("getMatchbyId");
-
-		clock()->startEvent("getLeagueSummoner", "Load LeagueSummoner");
 		// find all the summonners from the games
 		if (isset($matchById)) {
 			foreach ($matchById as $key => $value) {
@@ -118,11 +109,7 @@ class PagesController extends Controller
 		}
 
 
-		clock()->endEvent("getLeagueSummoner");
-
-		clock()->endEvent("SummonerController");
 		return response()->json($summoner);
-		clock()->startEvent("View", "Create/send view");
 		return view('summoner')
 		->with(['summoner' => $summoner])
 		->with(['icons' => $icons])
@@ -146,19 +133,8 @@ class PagesController extends Controller
 
 	public function champions()
 	{
-		clock()->startEvent("champions", "champions list controller");
-
-		clock()->startEvent("getContents", "Get Contents");
 		$file = file_get_contents('lolContent/data/en_GB/championFull.json');
-		clock()->endEvent("getContents");
-
-		clock()->startEvent("decode", "Decode");
 		$file = json_decode($file, true);
-		clock()->endEvent("decode");
-
-		clock()->endEvent("champions");
-
-		clock()->startEvent("view", "champions list view");
 		return view('champions')->with(['champions' => $file]);
 	}
 

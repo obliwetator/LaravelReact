@@ -1,5 +1,5 @@
 <?php
-
+use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -14,6 +14,8 @@
 
 // Default page
 
+	Route::post('/test', 'PagesController@test');
+	Route::any('/upload', 'PagesController@upload');
 
 	Route::view('/{path?}', 'welcome')->where('path', '.+');
 

@@ -696,7 +696,6 @@ class dbCall
 			else{
 				$entry = new Objects\LeagueSummoner($data);
 			}
-			dd($entry);
 			return $entry;
 		}
 		// No data. Get it
