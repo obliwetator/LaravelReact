@@ -60,7 +60,8 @@ export default class Index extends Component {
 					onUploadProgress: progressEvent => {
 					  let percentCompleted = Math.floor((progressEvent.loaded * 100) / progressEvent.total)
 					  console.log(percentCompleted)
-					}
+					},
+					headers: {'content-type': 'multipart/form-data'},
 				  }
 				Axios.post(url, formData, config)
 				.then((request) => {

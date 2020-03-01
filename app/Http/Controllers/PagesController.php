@@ -26,7 +26,9 @@ class PagesController extends Controller
 		}
 		else {
 			$uploadedFile = $request->file('file');
-			Storage::disk('local')->put('files/', $uploadedFile);
+			Storage::put("/files", $uploadedFile);
+
+			// $request->file('file')->storeAs("files", "$name.$ext");
 		}
 		return response()->json("ok");
 	}
