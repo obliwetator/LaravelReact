@@ -16,45 +16,12 @@
 	{{-- Dark Mode --}}
 	<link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
 	<link rel="stylesheet" type="text/css" href="/css/tipped.css"/>
-
-	<style>.container {
-		display: flex;
-		flex-direction: column;
-		font-family: sans-serif;
-	  }
-	  
-	  .container > p {
-		font-size: 1rem;
-	  }
-	  
-	  .container > em {
-		font-size: .8rem;
-	  }
-	  
-	  .dropzone {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		padding: 20px;
-		border-width: 2px;
-		border-radius: 2px;
-		border-color: #eeeeee;
-		border-style: dashed;
-		background-color: #fafafa;
-		color: #bdbdbd;
-		outline: none;
-		transition: border .24s ease-in-out;
-	  }
-	  
-	  .dropzone:focus {
-		border-color: #2196f3;
-	  }
-	  
-	  .dropzone.disabled {
-		opacity: 0.6;
-	  }
-	  </style>
+	
+	{{-- <link href="//cdn.syncfusion.com/ej2/ej2-base/styles/material.css" rel="stylesheet" />
+    <link href="//cdn.syncfusion.com/ej2/ej2-inputs/styles/material.css" rel="stylesheet" />
+    <link href="//cdn.syncfusion.com/ej2/ej2-popups/styles/material.css" rel="stylesheet" />
+    <link same href="//cdn.syncfusion.com/ej2/ej2-buttons/styles/material.css" rel="stylesheet" /> --}}
+    {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/0.19.38/system.js"></script> --}}
 
 {{-- <link
   rel="stylesheet"
@@ -67,7 +34,8 @@
 
 <body>
 	<div id="index"></div>
-	
+
+
 </body>
 	{{-- Complied with laravel mix. Takes all dependencies and combines them all into 1 big js file --}}
 	<script src={{ mix('/js/upload.js') }}></script>

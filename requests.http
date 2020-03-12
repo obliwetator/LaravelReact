@@ -1,6 +1,1 @@
-POST http://localhost:3000/api/getSummmonerSpell HTTP/1.1
-content-type: application/json
-
-{
-    "region": "eun1"
-}
+POST https://g.api.mega.co.nz/wsc/D56UaY9wnK3HCA2vBm-8ng?sid=XQ91rSDGRYtdjpdsf9WeLTFCLUQtbHpBbmJB7wiw1jxyeqXvY3LDhRTPZA&sn=MWG5CRnlfiU

@@ -11,6 +11,8 @@ class PagesController extends Controller
 {
 	public function test(Request $request)
 	{
+		return response()->json("cool");
+		dd($request->request);
 		if ($url = $request->input('url')) {
 			$name = md5($url).".png";
 			// $name = explode("/" , $url);
@@ -26,6 +28,7 @@ class PagesController extends Controller
 		}
 		else {
 			$uploadedFile = $request->file('file');
+			dd($request);
 			Storage::put("/files", $uploadedFile);
 
 			// $request->file('file')->storeAs("files", "$name.$ext");
