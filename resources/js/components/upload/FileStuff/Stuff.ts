@@ -116,21 +116,34 @@ export class ulManager {
             }
             if (e.target.result instanceof ArrayBuffer) {
                 var data = new Uint8Array(e.target.result)
-                Axios({
-                    method: 'post',
-                    url: '/test',
-                    responseType: 'arraybuffer',
-                    // headers: {'Content-Type':'application/octet-stream'},
-                    data: {test: "data" }
-                }).then((response) => {
+                // Axios({
+                //     method: 'post',
+                //     url: '/test',
+                //     responseType: 'arraybuffer',
+                //     // headers: {'Content-Type':'application/octet-stream'},
+                //     data: {test: data }
+                // }).then((response) => {
+                //     if (this.index < this.file.ul_offsets!.length) {
+                //         this.startUpload()
+                //     }
+                //     // File is done uploading
+                //     else {
+                //         console.log("done")
+                //     }
+                // })
+                var xhr = new XMLHttpRequest;
+                xhr.onloadend = (response) => {
                     if (this.index < this.file.ul_offsets!.length) {
+                        console.log("yea")
                         this.startUpload()
                     }
                     // File is done uploading
                     else {
                         console.log("done")
                     }
-                })
+                }
+                xhr.open("POST", "/test", false);
+                xhr.send(data);
             }
             else{
                 console.log("Filereader cannot read as Uint8Array. Something went very wrong")
