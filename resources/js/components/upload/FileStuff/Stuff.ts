@@ -64,25 +64,12 @@ export class ulManager {
             var boost = false;
 
 
-            if (this.file.size > 0x1880000 && boost) {
-                tasks[p] = new ChunkUpload(this.file, p, 0x480000)
-                p += 0x480000
-
-                for (i = 2; i < 4; i++) {
-                    tasks[p] = new ChunkUpload(this.file, p, i * 0x400000)
-                    pp = p
-                    p += i * 0x400000
-                }
-
-                ulBlockExtraSize = 16 * 1048576;
+            for (i = 1; i <= 8 && p < this.file.size - i * this.ulBlockSize; i++) {
+                tasks[p] = new ChunkUpload(this.file, p, i * this.ulBlockSize)
+                pp = p
+                p += i * this.ulBlockSize
             }
-            else {
-                for (i = 1; i <= 8 && p < this.file.size - i * this.ulBlockSize; i++) {
-                    tasks[p] = new ChunkUpload(this.file, p, i * this.ulBlockSize)
-                    pp = p
-                    p += i * this.ulBlockSize
-                }
-            }
+
 
             while (p < this.file.size) {
                 tasks[p] = new ChunkUpload(this.file, p, ulBlockExtraSize);
@@ -111,30 +98,14 @@ export class ulManager {
         var blob = this.file.slice(this.file.ul_offsets![this.index].byteOffset, this.file.ul_offsets![this.index].byteOffset + this.file.ul_offsets![this.index].byteLength)
         this.index++
         this.reader.onloadend = (e) => {
-            if (e.target?.readyState !== FileReader.DONE) {
+            if (e.target!.readyState !== FileReader.DONE) {
                 return
             }
-            if (e.target.result instanceof ArrayBuffer) {
-                var data = new Uint8Array(e.target.result)
-                // Axios({
-                //     method: 'post',
-                //     url: '/test',
-                //     responseType: 'arraybuffer',
-                //     // headers: {'Content-Type':'application/octet-stream'},
-                //     data: {test: data }
-                // }).then((response) => {
-                //     if (this.index < this.file.ul_offsets!.length) {
-                //         this.startUpload()
-                //     }
-                //     // File is done uploading
-                //     else {
-                //         console.log("done")
-                //     }
-                // })
-                var xhr = new XMLHttpRequest;
+            if (e.target!.result instanceof ArrayBuffer) {
+                var data = new Uint8Array(e.target!.result)
+                let xhr = new XMLHttpRequest;
                 xhr.onloadend = (response) => {
                     if (this.index < this.file.ul_offsets!.length) {
-                        console.log("yea")
                         this.startUpload()
                     }
                     // File is done uploading
@@ -142,7 +113,7 @@ export class ulManager {
                         console.log("done")
                     }
                 }
-                xhr.open("POST", "/test", false);
+                xhr.open("POST", "/test", true);
                 xhr.send(data);
             }
             else{

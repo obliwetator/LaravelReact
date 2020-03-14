@@ -67,7 +67,6 @@ class Index extends React.Component<Props, State>{
 				let url = '/test'
 				var FileManager = new ulManager(file)
 				FileManager.ulpload()
-				console.log(FileManager)
 				let config = {
 					onUploadProgress: (progressEvent: ProgressEvent) => {
 						let percentCompleted = Math.floor((progressEvent.loaded * 100) / progressEvent.total)
