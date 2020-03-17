@@ -64,16 +64,8 @@ class Index extends React.Component<Props, State>{
 		}
 		else {
 			([...files]).forEach(file => {
-				let url = '/test'
 				var FileManager = new ulManager(file)
 				FileManager.ulpload()
-				let config = {
-					onUploadProgress: (progressEvent: ProgressEvent) => {
-						let percentCompleted = Math.floor((progressEvent.loaded * 100) / progressEvent.total)
-						console.log(percentCompleted)
-					},
-					headers: { 'content-type': 'multipart/form-data' },
-				}
 			})
 		}
 

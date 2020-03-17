@@ -1,5 +1,3 @@
-import Axios from "axios"
-
 class ChunkUpload {
     file: FileUpload
     ul: File
@@ -30,7 +28,9 @@ export class ulManager {
     private ulMaxConcurrentSize: number
     private index: number
     private reader: FileReader
+    private cache: Uint8Array[]
     file: FileUpload
+    xhr: XMLHttpRequest
     constructor(file: FileUpload) {
         this.ulFaId = 0
         this.ulSize = 0
@@ -48,7 +48,9 @@ export class ulManager {
         this.ulMaxConcurrentSize = 1048576 * 10
         this.index = 0
         this.reader = new FileReader()
+        this.cache = []
         this.file = file
+        this.xhr = new XMLHttpRequest
     }
 
     ulpload() {
@@ -60,8 +62,6 @@ export class ulManager {
             var p = 0
             var tasks = Object.create(null)
             var ulBlockExtraSize = this.ulBlockExtraSize;
-            //var boost = !mega.chrome || parseInt(ua.details.version) < 68;
-            var boost = false;
 
 
             for (i = 1; i <= 8 && p < this.file.size - i * this.ulBlockSize; i++) {
@@ -69,7 +69,6 @@ export class ulManager {
                 pp = p
                 p += i * this.ulBlockSize
             }
-
 
             while (p < this.file.size) {
                 tasks[p] = new ChunkUpload(this.file, p, ulBlockExtraSize);
@@ -80,6 +79,7 @@ export class ulManager {
             if (this.file.size - pp > 0) {
                 tasks[pp] = new ChunkUpload(this.file, pp, this.file.size - pp);
             }
+
             // if (d) ulmanager.logger.info('ulTasks', tasks);
             Object.keys(tasks).forEach(function (k) {
                 self.file.ul_offsets!.push({
@@ -95,32 +95,72 @@ export class ulManager {
 
     startUpload() {
         console.log(this.index)
-        var blob = this.file.slice(this.file.ul_offsets![this.index].byteOffset, this.file.ul_offsets![this.index].byteOffset + this.file.ul_offsets![this.index].byteLength)
-        this.index++
+
+
         this.reader.onloadend = (e) => {
             if (e.target!.readyState !== FileReader.DONE) {
                 return
             }
             if (e.target!.result instanceof ArrayBuffer) {
                 var data = new Uint8Array(e.target!.result)
-                let xhr = new XMLHttpRequest;
-                xhr.onloadend = (response) => {
-                    if (this.index < this.file.ul_offsets!.length) {
-                        this.startUpload()
-                    }
-                    // File is done uploading
-                    else {
-                        console.log("done")
-                    }
-                }
-                xhr.open("POST", "/test", true);
-                xhr.send(data);
+                this.cache.push(data)
+                this.startUpload()
             }
-            else{
+            else {
                 console.log("Filereader cannot read as Uint8Array. Something went very wrong")
             }
         }
-        this.reader.readAsArrayBuffer(blob)
+
+        if (this.file.ul_offsets!.length > this.index) {
+            var blob = this.file.slice(this.file.ul_offsets![this.index].byteOffset, this.file.ul_offsets![this.index].byteOffset + this.file.ul_offsets![this.index].byteLength)
+            this.index++
+            console.log(this.index)
+    
+            this.reader.readAsArrayBuffer(blob)
+        }else{
+            this.index = 0
+            this.actuallyUpload()
+        }
+
+        // this.reader.onloadend = (e) => {
+        //     if (e.target!.readyState !== FileReader.DONE) {
+        //         return
+        //     }
+        //     if (e.target!.result instanceof ArrayBuffer) {
+        //         var data = new Uint8Array(e.target!.result)
+        //         let xhr = new XMLHttpRequest;
+        //         xhr.onloadend = (response) => {
+        //             if (this.index < this.file.ul_offsets!.length) {
+        //                 this.startUpload()
+        //             }
+        //             // File is done uploading
+        //             else {
+        //                 console.log("done")
+        //             }
+        //         }
+        //         xhr.open("POST", "/test", true);
+        //         xhr.send(data);
+        //     }
+        //     else{
+        //         console.log("Filereader cannot read as Uint8Array. Something went very wrong")
+        //     }
+        // }
+        // this.reader.readAsArrayBuffer(blob)
+    }
+
+    actuallyUpload() {
+        this.xhr.onloadend = (response) => {
+            if (this.index < this.cache.length) {
+                this.index++
+                // console.log(this.cache[this.index])
+                this.actuallyUpload()   
+            }
+            else{
+                console.log("done")
+            }
+        }
+        this.xhr.open("POST", "/test", true)
+        this.xhr.send(this.cache[this.index])
     }
 }
 

@@ -11,6 +11,8 @@ const mix = require("laravel-mix");
  |
  */
 
+mix.sass('resources/sass/app.scss', 'public/css');
+
 mix.react('resources/js/app.js', 'public/js').sourceMaps()
 // mix.react('resources/js/upload.js', 'public/js').sourceMaps()
 mix
@@ -30,9 +32,15 @@ mix
     }
   });
 
+mix.browserSync({ 
+  proxy: 'http://127.0.0.1:8000/',
+  ignore: {
+    ignoreInitial: true,
+    ignored: '*.css'
+},
+});
 
-   mix.browserSync('http://127.0.0.1:8000/');
-   if (mix.inProduction()) {
-      mix.version();
-   }
-   mix.disableSuccessNotifications();
+if (mix.inProduction()) {
+  mix.version();
+}
+mix.disableSuccessNotifications();

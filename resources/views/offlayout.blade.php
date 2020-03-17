@@ -14,8 +14,8 @@
 	<link rel="stylesheet" type="text/css" href="css/upload.css"
 
 	{{-- Dark Mode --}}
-	<link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
-	<link rel="stylesheet" type="text/css" href="/css/tipped.css"/>
+	<link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}"/>
+	<link rel="stylesheet" type="text/css" href="{{ asset('css/customcss.css')}}">
 	
 	{{-- <link href="//cdn.syncfusion.com/ej2/ej2-base/styles/material.css" rel="stylesheet" />
     <link href="//cdn.syncfusion.com/ej2/ej2-inputs/styles/material.css" rel="stylesheet" />
