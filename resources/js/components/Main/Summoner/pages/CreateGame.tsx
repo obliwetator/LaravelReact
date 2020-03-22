@@ -1,16 +1,15 @@
-import React, { Component } from "react";
+import * as React from 'react'
 
 import IndividualGame from './IndividualGame'
 
 import { ChampionImage, SummonerSpell, Runes, Item } from "../../Common/ImageComponents";
+import {CreateGameProps, CreateGameState} from "../../../ReactInterfaces/RootInterface";
 
-export default class CreateGame extends Component {
-    constructor(props){
-
+export default class CreateGame extends React.Component<CreateGameProps, CreateGameState> {
+    constructor(props: CreateGameProps){
         super(props)
-
         this.state = {
-            target: null,
+            target: 0,
             ShowMore: "More",
             IsPressed: false,
             IsLoaded: false,
@@ -27,7 +26,7 @@ export default class CreateGame extends Component {
     }
 
     TimeAgo = (function () {
-        var self = {};
+        var self: any = {};
 
         // Public Methods
         self.locales = {
@@ -47,19 +46,21 @@ export default class CreateGame extends Component {
             years: '%d years'
         };
 
-        self.inWords = function (timeAgo) {
-            var seconds = Math.floor((new Date() - parseInt(timeAgo)) / 1000),
+        self.inWords = function (timeAgo: number) {
+            // TODO Potential * 1000 is not needed
+            var seconds = Math.floor((new Date().getTime() * 1000 - timeAgo) / 1000),
                 separator = this.locales.separator || ' ',
                 words = this.locales.prefix + separator,
                 interval = 0,
-                intervals = {
+                intervals: {[key:string] : number} = {
                     year: seconds / 31536000,
                     month: seconds / 2592000,
                     day: seconds / 86400,
                     hour: seconds / 3600,
                     minute: seconds / 60
-                };
-
+                }
+                
+            var inter 
             var distance = this.locales.seconds;
 
             for (var key in intervals) {
@@ -84,7 +85,7 @@ export default class CreateGame extends Component {
     }());
     
 
-    ShowDetails = (event) => {
+    ShowDetails = (event : React.MouseEvent<HTMLButtonElement>) => {
         if (this.state.IsPressed) {
             this.setState({
                 ShowMore: "More",
@@ -102,15 +103,15 @@ export default class CreateGame extends Component {
     }
     render() {
         let GameDetails
-        if (this.state.IsPressed && !this.state.loaded) {
+        if (this.state.IsPressed && !this.state.IsLoaded) {
             GameDetails =                 
             <div className="GameDetails">
-                <IndividualGame {...this.props}/>
+                <IndividualGame {...this.props.match}/>
             </div>    
         }
         this.props.match.participantIdentities.forEach((participantIdentities, j) => {
             if (participantIdentities.player.summonerId == this.props.summoner.id) {
-                this.state.target = j
+                this.setState({target: j})
             }
         })
         return (
@@ -141,9 +142,8 @@ export default class CreateGame extends Component {
                     </div>
                     {/* Innactive accounts might not have played with the new rune system. If so dont display them at all */}
                     <div className="Runes d-inline-block">
-                        <Runes Id={ this.props.runes.runes[this.props.match.participants[this.state.target].stats.perk0].icon}/>
-
-                        <Runes Id={ this.props.runes.runes[this.props.match.participants[this.state.target].stats.perkSubStyle].icon}/>
+                        <Runes Id={ this.props.runes[this.props.match.participants[this.state.target].stats.perk0].icon}/>
+                        <Runes Id={ this.props.runes[this.props.match.participants[this.state.target].stats.perkSubStyle].icon}/>
                     </div>
                     <div className="ChampionName">
                         <a href="/champions/{{$champions->data[$champion[$key]]->name}}/statistics" target="_blank"></a>

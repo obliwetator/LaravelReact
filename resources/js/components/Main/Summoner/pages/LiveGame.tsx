@@ -1,8 +1,13 @@
-import React, { Component } from 'react';
+import * as React from 'react'
+import axios, { AxiosResponse } from 'axios';
 
+import { LiveGameProps, LiveGameState, LiveGameContentProps, TableContentProps } from "../../../ReactInterfaces/RootInterface";
+import { ActiveGame, Participant } from '../../../../ClassInterfaces/ActiveGame';
+import { SummonerSpell, Runes, ChampionImage, TierImage } from '../../Common/ImageComponents';
+import { Summoner } from '../../../../ClassInterfaces/Summoner';
 
-export default class LiveGame extends Component {
-    constructor(props) {
+export default class LiveGame extends React.Component<LiveGameProps, LiveGameState> {
+    constructor(props: LiveGameProps) {
         super(props);
 
         this.state = {
@@ -24,12 +29,12 @@ export default class LiveGame extends Component {
     componentDidUpdate() {
         // When we click on the live game tab we try to get the live game
         // After the call is made we set the loaded to true adn the webpage can render
-        if (this.props.tabs === "LiveGame" && !this.state.isLoaded) {
+        if (this.props.tabs.toString() === "LiveGame" && !this.state.isLoaded) {
             this.GetLiveGame()
         }
         // When we click any other tab we reset the live game
         // Any new click will get a new game request
-        if (this.props.tabs !== "LiveGame" && this.state.isLoaded) {
+        if (this.props.tabs.toString() !== "LiveGame" && this.state.isLoaded) {
             this.setState({
                 isLoaded: false,
                 activeGame: null,
@@ -37,7 +42,7 @@ export default class LiveGame extends Component {
         }
     }
 
-    getSummonerLeagues = (summoners) => {
+    getSummonerLeagues = (summoners: Participant[]) => {
         axios.post('/api/getLeagues', {
             region: this.props.region,
             summoners: summoners
@@ -59,7 +64,7 @@ export default class LiveGame extends Component {
             region: this.props.region,
             summonerId: this.props.summoner.id
         })
-        .then((response) => {
+        .then((response: AxiosResponse<ActiveGame>) => {
             this.getSummonerLeagues(response.data.participants)
             // handle success
             this.setState({
@@ -72,9 +77,9 @@ export default class LiveGame extends Component {
     }
 
     render() {
-        if (this.props.tabs == "LiveGame") {
+        if (this.props.tabs.toString() == "LiveGame") {
             if (this.state.isLoaded) {
-                if (this.state.activeGame !== "null" && this.state.summonerLeagues) {
+                if (this.state.activeGame && this.state.summonerLeagues) {
                     return (
                         <LiveGameContent
                             activeGame={this.state.activeGame}
@@ -113,7 +118,7 @@ export default class LiveGame extends Component {
     }
 }
 
-function LiveGameContent(props) {
+function LiveGameContent(props: LiveGameContentProps) {
     const activeGame = props.activeGame
     return (
         <div className="Spectate box">
@@ -151,7 +156,7 @@ function LiveGameContent(props) {
     )
 }
 
-function ColGroup(props) {
+function ColGroup(props: ActiveGame) {
     return (
         <colgroup>
             <col className="color thingy"></col>
@@ -173,15 +178,15 @@ function ColGroup(props) {
     )
 }
 
-function TableHead(props) {
+function TableHead(props: ActiveGame) {
     return (
         <thead>
             <tr>
                 <th className="bg-primary"></th>
-                <th colSpan="4">Blue/red Team</th>
-                <th colSpan="2">The Season ranked</th>
+                <th colSpan={4}>Blue/red Team</th>
+                <th colSpan={2}>The Season ranked</th>
                 <th>Ranekd Winratio</th>
-                <th colSpan="2">The season stats</th>
+                <th colSpan={2}>The season stats</th>
                 <th>Previous season rank</th>
                 <th>Tier Average</th>
                 {/* If games is ranked(has bans) add this */}
@@ -193,28 +198,28 @@ function TableHead(props) {
     )
 }
 
-function TableContent(props) {
+function TableContent(props: TableContentProps) {
     let body = props.activeGame.participants.map((participant, i) => {
         return(
              // LOOP dependign on summoner ammount
              <tr id="s">
-                <td colSpan="2">
+                <td colSpan={3}>
                     {/* Champion Image/link */}
                     <a href={"/champions/" + props.champions.data[props.activeGame.participants[i].championId].id + "/statistics"} target="_blank">
-                        <Image />
+                        <ChampionImage />
                     </a>
                 </td>
                 <td className="Summoner Spell">
-                    <Spell />
-                    <Spell />
+                    <SummonerSpell />
+                    <SummonerSpell />
                 </td>
                 <td className="Runes">
                     <div className="Rune">
                         {/* Zero index is Keystone */}
-                        <Image />
+                        <Runes/>
                     </div>
                     <div className="Rune">
-                        <Image />
+                        <Runes/>
                     </div>
                 </td>
                 <td className="Name">
@@ -223,35 +228,32 @@ function TableContent(props) {
                     </div>
                 </td>
                 <td className="Tier icon">
-                    {props.summonerLeague[i]["RANKED_SOLO_5x5"] ? <Image /> : null}
+                    {/* {props.summonerLeague[i] ? <TierImage /> : null} */}
 
                 </td>
                 <td className="Tier/level">
-                {props.summonerLeague[i]["RANKED_SOLO_5x5"] ?
-                    summonerLeague[i]["RANKED_SOLO_5x5"].tier + " " + summonerLeague[i]["RANKED_SOLO_5x5"].rank : null}
+                {/* {props.summonerLeague[i]["RANKED_SOLO_5x5"] ? */}
+                    {/* props.summonerLeague[i]["RANKED_SOLO_5x5"].tier + " " + props.summonerLeague[i]["RANKED_SOLO_5x5"].rank : null} */}
 
                 </td>
-                 <td className="Ranked WR">
+                <td className="Ranked WR">
 
                 </td>
                 <td className="Season info">
                     need champion stats
-                        </td>
+                </td>
                 <td className="Season info">
                     need champion stats
-                        </td>
+                </td>
                 <td className="Last season">
                     Last season rank(image)
-                        </td>
-                <td className="Detailed runes">
-                    <button className="btn btn-primary" onclick="return $.test.spectate.displayRunes(this)">Runes</button>
                 </td>
+                <td className="Detailed runes">
+                    <button className="btn btn-primary" onClick={() => alert("fix me")}>Runes</button>
+                </td>
+                <td className="Bans">
 
-
-                        <td className="Bans">
-
-                        </td>
-
+                </td>
             </tr>
         )
     })
@@ -259,14 +261,5 @@ function TableContent(props) {
         <tbody>
             
 		</tbody>
-    )
-}
-
-
-function Spell(props) {
-    return (
-        <div className="Spell">
-            <Image src={"/lolContent/img2/spell/" + $summonerSpells.data[$activeGame.participants[$key].spell1Id].id + ".png"} />
-        </div>
     )
 }

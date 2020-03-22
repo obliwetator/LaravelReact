@@ -129,8 +129,8 @@ class ApiController extends Controller
     
     public function GetSummonerLeagueTarget(Request $request)
     {
-		$summonerId = $request->get("summonerId");
-
+        $summonerId = $request->get("summonerId");
+        
         $summonerLeagueTarget = $this->LeagueDB()->getLeagueSummonerSingle($summonerId);
 
 		return response()->json($summonerLeagueTarget);

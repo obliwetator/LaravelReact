@@ -415,7 +415,7 @@ class dbCall
 		$selectQuery = "";
 		foreach ($matchlist->matches as $key => $value) {
 			$matchIds[$key] = $matchlist->matches[$key]->gameId;
-			$selectQuery = $selectQuery . "SELECT * FROM `gamebyid_eun1` WHERE `gameId` = " . $matchIds[$key] . " ORDER BY `gameId` DESC;\n";
+			$selectQuery = $selectQuery . "SELECT * FROM `gamebyid_$this->region` WHERE `gameId` = " . $matchIds[$key] . " ORDER BY `gameId` DESC;\n";
 		}
 		$resultDb = $this->makeDbCallGetMulti($selectQuery);
 
@@ -469,7 +469,7 @@ class dbCall
 	{
 		$selectQuery = "";
 
-		$selectQuery = $selectQuery . "SELECT * FROM `gamebyid_eun1` WHERE `gameId` = '$gameId'";
+		$selectQuery = $selectQuery . "SELECT * FROM `gamebyid_$this->region` WHERE `gameId` = '$gameId'";
 
 		$resultDb = $this->makeDbCallGet($selectQuery);
 		// Find Missing games
@@ -525,7 +525,7 @@ class dbCall
 	 */
 	public function setMatchById(array $matchById)
 	{
-		$insertQuery = "INSERT IGNORE INTO `gamebyid_eun1` (`gameId`, `matchJson`) VALUES ";
+		$insertQuery = "INSERT IGNORE INTO `gamebyid_$this->region` (`gameId`, `matchJson`) VALUES ";
 
 
 		foreach ($matchById as $key => $value) {
@@ -545,7 +545,7 @@ class dbCall
 	/** @param \API\LeagueAPI\Objects\LeagueSummoner[][][] $summonersLeagues */
 	public function setLeagueBySummoner($summonersLeagues, $entriesToFind = null)
 	{
-		$insertQuery = "INSERT IGNORE INTO `leaguebysummoner_eun1` (`summonerId`, `summonerName`, `queueType`, `tier`, `rank`, `leagueId`, `leaguePoints`, `wins`, `losses`, `veteran`, `inactive`, `freshBlood`, `hotStreak`, `isNull`) VALUES ";
+		$insertQuery = "INSERT IGNORE INTO `leaguebysummoner_$this->region` (`summonerId`, `summonerName`, `queueType`, `tier`, `rank`, `leagueId`, `leaguePoints`, `wins`, `losses`, `veteran`, `inactive`, `freshBlood`, `hotStreak`, `isNull`) VALUES ";
 		// If a single value is passed
 
 		foreach ($summonersLeagues as $key => $participant) {
@@ -576,7 +576,7 @@ class dbCall
 	}
 	public function setLeagueBySummonerSingle($entry, $summonerId)
 	{
-		$insertQuery = "INSERT IGNORE INTO `leaguebysummoner_eun1` (`summonerId`, `summonerName`, `queueType`, `tier`, `rank`, `leagueId`, `leaguePoints`, `wins`, `losses`, `veteran`, `inactive`, `freshBlood`, `hotStreak`, `isNull`) VALUES ";
+		$insertQuery = "INSERT IGNORE INTO `leaguebysummoner_$this->region` (`summonerId`, `summonerName`, `queueType`, `tier`, `rank`, `leagueId`, `leaguePoints`, `wins`, `losses`, `veteran`, `inactive`, `freshBlood`, `hotStreak`, `isNull`) VALUES ";
 		$i = 0;
 		if (empty($entry)) {
 			$insertQuery .= "('$summonerId', null, 'Unranked', null, null, null, null, null, null, null, null, null, null, 1);";
@@ -606,7 +606,7 @@ class dbCall
 		$selectQuery = "";
 
         foreach ($summonerIds as $key => $summoner) {
-			$selectQuery .= "SELECT * FROM `leaguebysummoner_eun1` WHERE `summonerId` = '$summoner';";
+			$selectQuery .= "SELECT * FROM `leaguebysummoner_$this->region` WHERE `summonerId` = '$summoner';";
 		}
 		$resultDb = $this->makeDbCallGetMulti($selectQuery);
 
@@ -634,7 +634,7 @@ class dbCall
 
 		$selectQuery = "";
         foreach ($summonerIds as $key => $summoner) {
-			$selectQuery .= "SELECT * FROM `leaguebysummoner_eun1` WHERE `summonerId` = '$summoner';";
+			$selectQuery .= "SELECT * FROM `leaguebysummoner_$this->region` WHERE `summonerId` = '$summoner';";
 		}
 
 		$resultDb = $this->makeDbCallGetMulti($selectQuery);
@@ -682,27 +682,25 @@ class dbCall
 	 /** Can return NULL */
 	public function getLeagueSummonerSingle(string $summonerId)
 	{
-		$selectQuery = "SELECT * FROM `leaguebysummoner_eun1` WHERE `summonerId` = '$summonerId';";
+		$selectQuery = "SELECT * FROM `leaguebysummoner_$this->region` WHERE `summonerId` = '$summonerId';";
 
 		$data = $this->makeDbCallGet($selectQuery);
 		// We have the some data in our DB
 		if (isset($data)) {
-			// If traget is unranked it will return a single array
-			if (in_array("0", $data)) {
+			// Can return as a nested or single array
+			if (in_array([], $data)) {
 				foreach ($data as $key => $value) {
 					$entry[$value["queueType"]] = new Objects\LeagueSummoner($value);
 				}
 			}
 			else{
-				$entry = new Objects\LeagueSummoner($data);
+				$entry[$data["queueType"]] = new Objects\LeagueSummoner($data);
 			}
 			return $entry;
 		}
 		// No data. Get it
 		else{
-			$lol = $this->makeApiRequest();
-
-			$entry = $lol->getLeagueSummonerSingle($summonerId);
+			$entry = $this->makeApiRequest()->getLeagueSummonerSingle($summonerId);
 
 			$this->setLeagueBySummonerSingle($entry, $summonerId);
 			return $entry;

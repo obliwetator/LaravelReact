@@ -563,7 +563,7 @@ class LeagueAPI
 	 *
 	 * This will retrieve all the runes and they AREN'T organized by the Paths
 	 */
-	public function getStaticRunesReforged(string $locale = 'en_GB', string $version = null): StaticData\StaticRunesReforgedList
+	public function getStaticRunesReforged(string $locale = 'en_GB', string $version = null)
 	{
 		$data = DragonData::getStaticRunesReforged($locale, $version);
 
@@ -581,9 +581,9 @@ class LeagueAPI
 				}
 			}
 		}
-		$data = ['runes' => $r];
-
-		return new StaticData\StaticRunesReforgedList($data);
+		// $data = ['runes' => $r];
+		return $r;
+		// return new StaticData\StaticRunesReforgedList($data);
 	}
 	/** Get all summoner spells
 	 *

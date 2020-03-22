@@ -11,11 +11,11 @@ class PagesController extends Controller
 {
 	public function test(Request $request)
 	{
-		return response()->json("cool");
+		// return response()->json("cool")
 		dd($request->request);
 		if ($url = $request->input('url')) {
 			$name = md5($url).".png";
-			// $name = explode("/" , $url);
+			// $name = explode("/" , $url)
 			// check if image exists
 			if (Storage::exists("files/$name.png")) {
 				return response()->json("Already exists");
@@ -31,7 +31,6 @@ class PagesController extends Controller
 			dd($request);
 			Storage::put("/files", $uploadedFile);
 
-			// $request->file('file')->storeAs("files", "$name.$ext");
 		}
 		return response()->json("ok");
 	}
@@ -65,7 +64,6 @@ class PagesController extends Controller
 			dbCall::SET_REGION => $region
 		]);
 
-		// $region = 'eun1';
 		$locale = 'en_GB';
 		$version = '9.17.1';
 		$limit = 2;
@@ -73,7 +71,7 @@ class PagesController extends Controller
 		$summoner = $db->getSummoner($region, $summonerName);
 
 		if (isset($summoner)) {
-			
+			// kjhkjh
 		}
 		else{
 			return abort(404);
@@ -113,8 +111,6 @@ class PagesController extends Controller
 			$summonerLeagueTarget = null;
 		}
 
-
-		return response()->json($summoner);
 		return view('summoner')
 		->with(['summoner' => $summoner])
 		->with(['icons' => $icons])

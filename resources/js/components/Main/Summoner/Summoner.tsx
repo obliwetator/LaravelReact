@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
-import axios from 'axios';
+import * as React from 'react'
+import { RouteProps } from 'react-router';
+import axios, { AxiosResponse } from 'axios';
 import NotFound from '../../404/NotFound';
 
 
@@ -10,15 +10,22 @@ import { Tab, Tabs } from 'react-bootstrap';
 import { Summary } from "./pages/Summary";
 import LiveGame from './pages/LiveGame';
 
-export default class Summoner extends Component {
+import {SummonerProps, SummonerState}  from "../../ReactInterfaces/RootInterface";
+import { Summoner as SummonerClass} from "../../../ClassInterfaces/Summoner";
+
+import { LeagueSummoner } from "../../../ClassInterfaces/LeagueSummoner";
+import { SelectCallback } from 'react-bootstrap/helpers';
+
+export default class Summoner extends React.Component<SummonerProps, SummonerState> {
   // Prevents a memory leak if we have an async request and dont update the state ( Eg we go forward or backward in the browser)
   _isMounted = false;
 
-  constructor(props) {
+  constructor(props: SummonerProps) {
     super(props);
 
     this.state = {
       region: this.props.match.params.region,
+      name: this.props.match.params.name,
       error: null,
       isLoaded: false,
       summonerName: null,
@@ -26,8 +33,8 @@ export default class Summoner extends Component {
       icons: null,
       summonerSpells: null,
       champions: null,
-      runes: null,
       currentTab: "summary",
+      runes: null
     };
   }
 
@@ -44,51 +51,53 @@ export default class Summoner extends Component {
   };
 
   GetSummoner = () => {
+    console.log("state",this.state)
+    console.log("props", this.props)
     return axios.get('/api/summoner', {
       params: {
         // workaround
-        name: this.props.match.params.name,
-        region: this.props.match.params.region
+        name: this.state.name,
+        region: this.state.region
       }
     })
 
   }
-
-  GetSummonerLeagueTarget = (summoner) => {
+// TODO
+  GetSummonerLeagueTarget = (summoner: any) => {
     return axios.post('/api/getSummonerLeagueTarget', {
-      region: this.props.match.params.region,
+      region: this.state.region,
       summonerId: summoner.id
     })
   }
 
   GetItems = () => {
     return axios.post('/api/getItems', {
-      region: this.props.match.params.region
+      region: this.state.region
     })
   }
 
   GetIcons = () => {
     return axios.post('/api/getIcons', {
-      region: this.props.match.params.region
+      region: this.state.region
     })
   }
 
   GetSummmonerSpell = () => {
-    return axios.post('/api/getSummmonerSpell', {
-      region: this.props.match.params.region
+    return axios.post('/api/getSummonerSpell', {
+      region: this.state.region
     })
   }
 
 
   GetChampions = () => {
     return axios.post('/api/getChampions', {
-      region: this.props.match.params.region
+      region: this.state.region
     })
   }
 
   GetRunes = () => {
     return axios.post('/api/getRunes', {
-      region: this.props.match.params.region
+      region: this.state.region
     })
   }
 
@@ -108,11 +117,11 @@ export default class Summoner extends Component {
       this.GetChampions(),
       this.GetRunes(),
     ])
-      .then(axios.spread((Summoner, Items, Icons, SummonerSpells, Champions, Runes) => {
+      .then(axios.spread((Summoner: AxiosResponse<SummonerClass>, Items, Icons, SummonerSpells, Champions, Runes) => {
         if (this._isMounted) {
           this.setState({
-            [Summoner.data.summoner.name.replace(/\s/g, '').toLowerCase()]: Summoner.data,
-            summonerName: Summoner.data.summoner.name.replace(/\s/g, '').toLowerCase(),
+            [Summoner.data.name.replace(/\s/g, '').toLowerCase()]: Summoner.data,
+            summonerName: Summoner.data.name.replace(/\s/g, '').toLowerCase(),
             items: Items.data,
             icons: Icons.data,
             summonerSpells: SummonerSpells.data,
@@ -120,12 +129,12 @@ export default class Summoner extends Component {
             runes: Runes.data,
           })
           axios.all([
-            this.GetSummonerLeagueTarget(Summoner.data.summoner)
+            this.GetSummonerLeagueTarget(Summoner.data)
           ]).then(axios.spread((SummonerLeagueTarget) =>{
-            let property = "summonerLeagueTarget" + Summoner.data.summoner.name.replace(/\s/g, '').toLowerCase()
+            let property = "summonerLeagueTarget" + Summoner.data.name.replace(/\s/g, '').toLowerCase()
 
             this.setState({
-              [property]: SummonerLeagueTarget.data,
+              // [property]: SummonerLeagueTarget.data,
               isLoaded: true,
             })
           })).catch((error) => {
@@ -134,7 +143,7 @@ export default class Summoner extends Component {
             })
           })
           
-          document.title = Summoner.data.summoner.name
+          document.title = Summoner.data.name
         }
       }))
       .catch((error) => {
@@ -145,14 +154,15 @@ export default class Summoner extends Component {
       })
   }
 
-  componentDidUpdate(prevProps) {
+  
+  componentDidUpdate(prevProps: SummonerProps) {
     let prevSearch = prevProps.match.params.name;
     let newSearch = this.props.match.params.name;
 
     if (prevSearch !== newSearch) {
       // When we search for a new summoner we save they summoner details in the state.
       // If we search for a new summoner or go back/formward in history we will check the state first before calling the server
-      let name = this.props.match.params.name.replace(/\s/g, '')
+      let name: string = this.props.match.params.name.replace(/\s/g, '')
       if (name && this.state[name]) {
         // We update which summoner we are currently viewing. The summoner object with the same name should be in the state
         this.setState({ summonerName: this.props.match.params.name.replace(/\s/g, '') })
@@ -165,14 +175,14 @@ export default class Summoner extends Component {
         ])
           .then(axios.spread((Data) => {
             this.setState({
-              [Data.data.summoner.name.replace(/\s/g, '').toLowerCase()]: Data.data,
+              // [Data.data.summoner.name.replace(/\s/g, '').toLowerCase()]: Data.data,
               summonerName: Data.data.summoner.name.replace(/\s/g, '').toLowerCase(),
               isLoaded: true,
             })
             
             axios.all([
               this.GetSummonerLeagueTarget(Data.data.summoner)
-            ]).then(axios.spread((SummonerLeagueTarget) =>{
+            ]).then(axios.spread((SummonerLeagueTarget: AxiosResponse<LeagueSummoner>) =>{
               let property = "summonerLeagueTarget" + Data.data.summoner.name.replace(/\s/g, '').toLowerCase()
   
               this.setState({
@@ -199,9 +209,9 @@ export default class Summoner extends Component {
     }
   }
 
-  handleTab = (event) => {
+  handleTab = (eventKey: any)  => {
     this.setState({
-        currentTab: event
+        currentTab: eventKey.toString()
     })
 }
 
@@ -250,7 +260,7 @@ export default class Summoner extends Component {
                 </Tab>
                 <Tab eventKey="LiveGame" title="Live Game">
                   <LiveGame
-                    runes={this.state.runes}
+                    runes={this.state.runes!}
                     summonerSpells={this.state.summonerSpells}
                     summoner={this.state[this.state.summonerName].summoner}
                     champions={this.state.champions}

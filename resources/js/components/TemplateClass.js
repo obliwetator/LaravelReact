@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
+import * as React from 'react'
+import * as ReactDOM from 'react-dom'
 
-export default class Root extends Component {
+export default class Root extends React.Component {
     render() {
         return (
             <div className="container">

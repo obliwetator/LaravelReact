@@ -1,8 +1,10 @@
-import React, { Component } from "react";
+import * as React from "react";
 import Image from 'react-bootstrap/Image'
 
-export default class IndividualGame extends Component {
-	constructor(props) {
+import {IndividualGameProps, IndividualGameState} from "../../../ReactInterfaces/RootInterface";
+
+export default class IndividualGame extends React.Component<IndividualGameProps, IndividualGameState> {
+	constructor(props: IndividualGameProps) {
 		super(props)
 
 		this.state = {
@@ -23,9 +25,9 @@ export default class IndividualGame extends Component {
 	}
 }
 
-function IndividualGameContent(props) {
+function IndividualGameContent(props: IndividualGameProps) {
 	let runes
-	if (props.match.participants[0].stats.perk0) {
+	if (props.participants[0].stats.perk0) {
 		runes = <col className="Runes" style={{ width: 38}}></col>
 	}
 	else{
@@ -58,7 +60,7 @@ function IndividualGameContent(props) {
 							<colgroup>
 								<col className="ChampionImage" style={{ width: 38}}></col>
 								<col className="SummonerSpell" style={{ width: 38}}></col>
-								{props.match.participants[0].stats.perk0 &&
+								{props.participants[0].stats.perk0 &&
 								<col className="Runes" style={{ width: 38}}></col>
 								}
 								<col className="SummonerName" style={{ width: 140}}></col>
@@ -71,13 +73,13 @@ function IndividualGameContent(props) {
 							</colgroup>
 							<thead className="Header">
 								<tr>
-									{props.match.participants[0].stats.perk0 ?
-										<th colSpan="4">
+									{props.participants[0].stats.perk0 ?
+										<th colSpan={4}>
 										<span>Victory?</span>
 										<span>Team color</span>
 									</th>
 									: 
-									<th colSpan="3">
+									<th colSpan={3}>
 										<span>Victory?</span>
 										<span>Team color</span>
 									</th>
@@ -108,7 +110,7 @@ function IndividualGameContent(props) {
 										</div>
 									</td>
 
-									{props.match.participants[0].stats.perk0 &&
+									{props.participants[0].stats.perk0 &&
 										<td className="Rune">
 										<div className="Rune">
 											{/* Zero index is Keystone */}
@@ -165,7 +167,7 @@ function IndividualGameContent(props) {
 							<colgroup>
 							<col className="ChampionImage" style={{ width: 38}}></col>
 								<col className="SummonerSpell" style={{ width: 38}}></col>
-								{props.match.participants[0].stats.perk0 &&
+								{props.participants[0].stats.perk0 &&
 								<col className="Runes" style={{ width: 38}}></col>
 								}
 								<col className="SummonerName" style={{ width: 140}}></col>
@@ -178,13 +180,13 @@ function IndividualGameContent(props) {
 							</colgroup>
 							<thead className="Header">
 								<tr>
-									{props.match.participants[0].stats.perk0 ?
-										<th colSpan="4">
+									{props.participants[0].stats.perk0 ?
+										<th colSpan={4}>
 										<span>Victory?</span>
 										<span>Team color</span>
 									</th>
 									: 
-									<th colSpan="3">
+									<th colSpan={3}>
 										<span>Victory?</span>
 										<span>Team color</span>
 									</th>
@@ -214,7 +216,7 @@ function IndividualGameContent(props) {
 											<Image />
 										</div>
 									</td>
-									{props.match.participants[0].stats.perk0 &&
+									{props.participants[0].stats.perk0 &&
 										<td className="Rune">
 										<div className="Rune">
 											{/* Zero index is Keystone */}

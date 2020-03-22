@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from 'react'
 import { 
   Route,
   Switch,
@@ -6,22 +6,23 @@ import {
   useParams,
   useRouteMatch
  } from "react-router-dom";
-import { Navbar, Nav, Form, FormControl, Button } from "react-bootstrap";
 import Welcome from "./Pages/Welcome"
 
 import Footer from './Footer/Footer';
 import Summoner from "./Main/Summoner/Summoner";
 import NavigationBar from "./NavigationBar/NavigationBar";
 
-class Main extends React.Component {
-  constructor(props) {
+import {MainProps, MainState} from "./ReactInterfaces/RootInterface";
+
+class Main extends React.Component<MainProps, MainState> {
+  constructor(props: MainProps) {
     super(props);
   }
 
   render() {
     return (
       <div className="dark">
-        <NavigationBar {...this.props}/>
+        {/* <NavigationBar {...this.props}/> */}
         <Switch>
           <Route exact path="/" component={Welcome} />
           <Route exact path="/champions" />
@@ -30,11 +31,9 @@ class Main extends React.Component {
           {/* <Route path="/summoner" component={Summoner} /> */}
 
           <Route
-            path="/summoner"
-            render={({ match: { url } }) => (
-              <>
-                <Route path={`${url}/:region/:name`} component={Summoner} />
-              </>
+            path="/summoner/:region/:name"
+            render={({ match }) => (
+                <Summoner match={match}/>
             )}
           />
 
@@ -51,10 +50,11 @@ class Main extends React.Component {
   }
 }
 
-export default withRouter(Main);
+export default Main;
+// export default withRouter(Main);
 
-
-function NotFound(props) {
+// TODO props
+function NotFound(props: any) {
   return (
     <div>
       The page {props.location.pathname.slice(1)} does not exist.

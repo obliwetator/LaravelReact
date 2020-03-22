@@ -42,6 +42,7 @@ class Index extends React.Component<Props, State>{
 		e.preventDefault()
 		e.stopPropagation()
 		e.persist()
+		//kjh
 		console.log("DragLeave")
 	}
 	handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -77,7 +78,7 @@ class Index extends React.Component<Props, State>{
 			return
 		}
 		// Regex pattern that matches common image 
-		var regex = /(?:([^:\/?#]+):)?(?:\/\/([^\/?#]*))?([^?#]*\.?(jpe?g|gif|a?png|tiff?|bmp|xcf|webp))?(?:\?([^#]*))?(?:#(.*))?/
+		// var regex = /(?:([^:\/?#]+):)?(?:\/\/([^\/?#]*))?([^?#]*\.?(jpe?g|gif|a?png|tiff?|bmp|xcf|webp))?(?:\?([^#]*))?(?:#(.*))?/
 		let config = {
 			onUploadProgress: (progressEvent: ProgressEvent) => {
 				let percentCompleted = Math.floor((progressEvent.loaded * 100) / progressEvent.total)

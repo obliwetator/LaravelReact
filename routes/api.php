@@ -25,7 +25,7 @@ Route::get('test', function(){
 Route::get('/summoner', 'ApiController@summoner');
 Route::post('/getItems', 'ApiController@getItems');
 Route::post('/getIcons', 'ApiController@getIcons');
-Route::post('/getSummmonerSpell', 'ApiController@getSummonerSpells');
+Route::post('/getSummonerSpell', 'ApiController@getSummonerSpells');
 Route::post('/getChampions', 'ApiController@getChampions');
 Route::post('/getSummonerLeagueTarget', 'ApiController@GetSummonerLeagueTarget');
 Route::post('/getRunes', 'ApiController@getRunes');

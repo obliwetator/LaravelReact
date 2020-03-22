@@ -1,16 +1,18 @@
-import React from 'react';
+import * as React from 'react';
 import Image from 'react-bootstrap/Image'
 import { Tab, Tabs } from 'react-bootstrap';
-import Chart from 'chart.js';
+import * as Chart from 'chart.js';
 
 import CreateGame from './CreateGame';
+import { SummaryProps, SummaryState, CreateGamesListProps } from '../../../ReactInterfaces/RootInterface';
+import { Ranked } from '../../../../ClassInterfaces/LeagueSummoner';
 
-export class Summary extends React.Component {
-    constructor(props) {
+export class Summary extends React.Component<SummaryProps, SummaryState> {
+    constructor(props: SummaryProps) {
         super(props);
 
         this.state = {
-            chart: null,
+            chart!: null,
             currentTab: "TotalGames"
         };
 
@@ -40,7 +42,7 @@ export class Summary extends React.Component {
         this.InitChart(WinLoss)
     }
 
-    InitChart = (WinLoss) => {
+    InitChart = (WinLoss: number[]) => {
         let data = {
             labels: ['Win', 'Loss'],
             datasets: [{
@@ -64,23 +66,29 @@ export class Summary extends React.Component {
             }
         }
 
-        let ctx = document.getElementById('myChart').getContext('2d');
+        let ctx = document.getElementById('myChart') as HTMLCanvasElement
+        ctx.getContext('2d')
         let chart = new Chart(ctx, {
             type: 'doughnut',
             data: data,
             options: settings
         });
 
-        this.chart = chart
+        this.setState({ chart : chart})
     }
 
-    UpdateChart = (WinLoss) => {
-        this.chart.data.datasets.forEach((dataset) => {
-            dataset.data[0] = WinLoss[0];
-            dataset.data[1] = WinLoss[1];
-        });
-        
-        this.chart.update()
+    UpdateChart = (WinLoss: number[]) => {
+        if (this.state.chart?.data.datasets !== undefined) {
+            this.state.chart.data.datasets.forEach((dataset) => {
+                if (dataset.data !== undefined) {
+                    dataset.data[0] = WinLoss[0];
+                    dataset.data[1] = WinLoss[1];
+                }
+
+            });
+            this.state.chart.update()
+        }
+
     }
 
     componentDidUpdate() { 
@@ -106,11 +114,11 @@ export class Summary extends React.Component {
         this.UpdateChart(WinLoss)
     }
 
-    chartButton = (event) => {
-        console.log(this.chart.data.datasets[0].data)
+    chartButton = (event: React.MouseEvent<HTMLButtonElement>) => {
+        // console.log(this.state.chart.data.datasets[0].data)
     }
 
-    handleTab = (event) => {
+    handleTab = (event: any) => {
         this.setState({
             currentTab: event
         })
@@ -119,15 +127,14 @@ export class Summary extends React.Component {
 
 
     render() {
-        const { RANKED_FLEX_SR, RANKED_SOLO_5x5, RANKED_TFT } = this.props
-        const { gamesById, summoner, champions, summonerSpells, items } = this.props
+        const { RANKED_FLEX_SR, RANKED_SOLO_5x5, RANKED_TFT} = this.props.LeagueTarget
 
         return (
             <div className="row">
                 <div className="col-md-3" >
-                    <SOLO {...RANKED_SOLO_5x5} />
+                    <SOLO {...RANKED_SOLO_5x5!} />
                     <hr className="bg-success"></hr>
-                    <FLEX {...RANKED_FLEX_SR} />
+                    <FLEX {...RANKED_FLEX_SR!} />
                 </div>
                 <div className="col-md-9">
                     <div className="container-fluid">
@@ -142,7 +149,7 @@ export class Summary extends React.Component {
                                     </div>
                                     {/* Each div is a game */}
                                     <div className="GameList">
-                                        <CreateGamesList  {...this.props} />
+                                        <CreateGamesList {...this.props} />
                                     </div>
                                 </div>
                             </Tab>
@@ -164,8 +171,7 @@ export class Summary extends React.Component {
         )
     }
 }
-
-function RankedSoloGames(props) {
+function RankedSoloGames(props: {tabs: string}) {
     const [isLoaded, setisLoaded] = React.useState(false);
     if (!isLoaded) {
         setisLoaded(true)
@@ -179,7 +185,7 @@ function RankedSoloGames(props) {
     }
 }
 
-function SOLO(props) {
+function SOLO(props: Ranked) {
     // If SOLO rank isset
     if (Object.entries(props).length !== 0) {
         return (
@@ -217,7 +223,7 @@ function SOLO(props) {
         )
     }
 }
-function FLEX(props) {
+function FLEX(props: Ranked) {
     // If FLEX rank isset
     if (Object.entries(props).length !== 0) {
         return (
@@ -257,12 +263,18 @@ function FLEX(props) {
     }
 }
 
-function CreateGamesList(props) {
+
+
+function CreateGamesList(props: CreateGamesListProps) {
     let game = props.gamesById.map((match, i) => {
         // Find the summoner we are looking for
         return (
             <CreateGame runes={props.runes} key={i} match={match} summoner={props.summoner} champions={props.champions} summonerSpells={props.summonerSpells} items={props.items} />
         )
     })
-    return game
+    return (
+        <React.Fragment>
+            game
+        </React.Fragment>
+    )
 }

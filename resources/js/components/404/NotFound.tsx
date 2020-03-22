@@ -1,8 +1,8 @@
-import React from 'react'
+import * as React from 'react'
 
 
 
-function NotFound(error) {
+function NotFound(error: any) {
     console.log(error)
     if (error.error.response) {
         

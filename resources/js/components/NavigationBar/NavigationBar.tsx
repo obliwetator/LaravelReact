@@ -1,18 +1,23 @@
-import React from "react";
+import * as React from "react";
 import { Route, Switch, withRouter } from "react-router-dom";
 import { Navbar, Nav, Form, FormControl, Button } from "react-bootstrap";
 import Toggle from 'react-toggle'
+import { NavigationBarProps, NavigationBarState } from "../ReactInterfaces/RootInterface";
 
-class NavigationBar extends React.Component {
+class NavigationBar extends React.Component<NavigationBarProps, NavigationBarState> {
+  constructor(props: NavigationBarProps) {
+    super(props)
 
-  state = {
-    searchText: "",
-    regions: [],
-    text: {},
-    region: "EUNE",
-    regionValue: "eun1",
-    darkMode: localStorage.getItem("darkSwitch")? true: false
-  };
+    this.state = {
+      searchText: "",
+      regions: [],
+      text: {},
+      region: "EUNE",
+      regionValue: "eun1",
+      darkMode: localStorage.getItem("darkSwitch")? true: false
+    };
+  }
+
 
   componentDidMount() {
     this.setState({
@@ -36,20 +41,20 @@ class NavigationBar extends React.Component {
     //     this.setState({darkMode: darkSwitch.checked})
     // }
   }
-
-  handleChangeRegion = event => {
+  // TODO FIX :any
+  handleChangeRegion = (event: any) => {
     this.setState({
       regionValue: event.target.value
     });
   }
 
-  handleSearchInput = event => {
+  handleSearchInput = (event: any) => {
     this.setState({
       searchText: event.target.value
     });
   };
 
-  handleSearchSubmit = (event) => {
+  handleSearchSubmit = (event: any) => {
     // Prevents default form action when pressing enter
     event.preventDefault()
 
@@ -58,17 +63,17 @@ class NavigationBar extends React.Component {
         pathname: "/summoner/" + this.state.regionValue + "/" + this.state.searchText,
       });
       // Reset the search box
-      this.state.searchText = ""
+      this.setState({searchText: ""})
     } else {
       alert("Please enter some search text!");
     }
   };
-
-  handleRoute = route => () => {
+  // TODO more :any
+  handleRoute = (route: any) => () => {
     this.props.history.push({ pathname: route });
   };
 
-  handleDarkMode = (event) => {
+  handleDarkMode = (event: any) => {
     this.setState({darkMode: event.target.checked })
 
     if (event.target.checked) {
@@ -103,7 +108,7 @@ class NavigationBar extends React.Component {
             checked: <Moon/>,
             unchecked: <Sun/>,
           }}
-          onFocus={this.handleFocus}
+          // onFocus={this.handleFocus}
           className="toggleBarColor"
           id='darkSwitch'
           checked={this.state.darkMode}
@@ -112,7 +117,9 @@ class NavigationBar extends React.Component {
         <p className="text-primary">Doesn't work. Only EUNE for now</p>
         <Form inline onSubmit={this.handleSearchSubmit}>
           {/* We set the value for the region in the state with a default value (EUNE) and when we change the dropdown we update the state */}
-          <Form.Control as="select" value={this.state.value} onChange={this.handleChangeRegion}>
+          <Form.Control as="select" 
+          // value={this.state.value} 
+          onChange={this.handleChangeRegion}>
             {/* Above we iterrate over the regions and produce a dynamic select menu */}
             {region}
           </Form.Control>

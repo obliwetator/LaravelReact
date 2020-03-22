@@ -1,7 +1,9 @@
-import React from "react";
+import * as React from "react";
 import Image from 'react-bootstrap/Image'
 
-export default function SummonerHeader(props) {
+import { SummonerHeaderProps } from "../../ReactInterfaces/RootInterface";
+
+export default function SummonerHeader(props: SummonerHeaderProps) {
     return (
         <div className="position-relative">
             <div className="d-inline-block">
