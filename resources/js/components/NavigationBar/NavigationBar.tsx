@@ -1,13 +1,12 @@
 import * as React from "react";
-import { Route, Switch, withRouter } from "react-router-dom";
+import { Route, Switch, withRouter, RouteComponentProps, Link } from "react-router-dom";
 import { Navbar, Nav, Form, FormControl, Button } from "react-bootstrap";
 import Toggle from 'react-toggle'
 import { NavigationBarProps, NavigationBarState } from "../ReactInterfaces/RootInterface";
 
-class NavigationBar extends React.Component<NavigationBarProps, NavigationBarState> {
-  constructor(props: NavigationBarProps) {
+class NavigationBar extends React.Component<RouteComponentProps<NavigationBarProps>, NavigationBarState> {
+  constructor(props: RouteComponentProps<NavigationBarProps>) {
     super(props)
-
     this.state = {
       searchText: "",
       regions: [],
@@ -31,15 +30,6 @@ class NavigationBar extends React.Component<NavigationBarProps, NavigationBarSta
     else{
       document.body.removeAttribute("data-theme");
     }
-    // var darkSwitch = document.getElementById("darkSwitch");
-    // if (darkSwitch) {
-    //   var darkThemeSelected =
-    //     localStorage.getItem("darkSwitch") !== null && localStorage.getItem("darkSwitch") === "dark";
-    //     darkSwitch.checked = darkThemeSelected;
-    //     darkThemeSelected  ? document.body.setAttribute("data-theme", "dark")   : document.body.removeAttribute("data-theme");
-
-    //     this.setState({darkMode: darkSwitch.checked})
-    // }
   }
   // TODO FIX :any
   handleChangeRegion = (event: any) => {
@@ -69,10 +59,14 @@ class NavigationBar extends React.Component<NavigationBarProps, NavigationBarSta
     }
   };
   // TODO more :any
-  handleRoute = (route: any) => () => {
+  handleRoute = (route: string) => () => {
+    console.log(this.props)
     this.props.history.push({ pathname: route });
   };
 
+  dosmth = () => {
+
+  }
   handleDarkMode = (event: any) => {
     this.setState({darkMode: event.target.checked })
 
@@ -100,10 +94,8 @@ class NavigationBar extends React.Component<NavigationBarProps, NavigationBarSta
           <Nav.Link onClick={this.handleRoute("/champions")}>Champions</Nav.Link>
           <Nav.Link onClick={this.handleRoute("/stats")}>Stats</Nav.Link>
           <Nav.Link onClick={this.handleRoute("/leaderboards")}>Leadeboards</Nav.Link>
-
         </Nav>
         <Toggle
-        
           icons={{
             checked: <Moon/>,
             unchecked: <Sun/>,

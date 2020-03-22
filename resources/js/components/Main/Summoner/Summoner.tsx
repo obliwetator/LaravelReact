@@ -1,20 +1,14 @@
 import * as React from 'react'
-import { RouteProps } from 'react-router';
 import axios, { AxiosResponse } from 'axios';
 import NotFound from '../../404/NotFound';
-
-
 import SummonerHeader from './SummonerHeader'
 import { Tab, Tabs } from 'react-bootstrap';
-
 import { Summary } from "./pages/Summary";
 import LiveGame from './pages/LiveGame';
-
 import {SummonerProps, SummonerState}  from "../../ReactInterfaces/RootInterface";
 import { Summoner as SummonerClass} from "../../../ClassInterfaces/Summoner";
 
 import { LeagueSummoner } from "../../../ClassInterfaces/LeagueSummoner";
-import { SelectCallback } from 'react-bootstrap/helpers';
 
 export default class Summoner extends React.Component<SummonerProps, SummonerState> {
   // Prevents a memory leak if we have an async request and dont update the state ( Eg we go forward or backward in the browser)
@@ -22,7 +16,6 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
 
   constructor(props: SummonerProps) {
     super(props);
-
     this.state = {
       region: this.props.match.params.region,
       name: this.props.match.params.name,
@@ -51,8 +44,6 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
   };
 
   GetSummoner = () => {
-    console.log("state",this.state)
-    console.log("props", this.props)
     return axios.get('/api/summoner', {
       params: {
         // workaround

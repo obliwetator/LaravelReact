@@ -1,22 +1,26 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import { BrowserRouter as Router } from "react-router-dom"
+import { 
+	BrowserRouter as Router,
+} from "react-router-dom"
 import  {RootProps, RootState}  from "./ReactInterfaces/RootInterface";
 import Main from './Main';
-import { useHistory } from "react-router-dom";
+import { createBrowserHistory } from 'history';
 
 export default class Root extends React.Component<RootProps, RootState> {
 	
-	constructor(props : RootProps) {
+	constructor(props: RootProps) {
 		super(props);
 		this.state = {};
 	}
 	componentDidMount() {
 		document.title = 'Welcome';
 	}
+	
 	render() {
+		console.log("root" , this.props)
 		return (
-			<Router> 
+			<Router>
 				<Main></Main>
 			</Router>
 		);

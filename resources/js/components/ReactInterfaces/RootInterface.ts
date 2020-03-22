@@ -15,7 +15,6 @@ import { Items } from '../../ClassInterfaces/Items';
 import { History } from 'history';
 
 export interface RootProps {
-
 }
 
 export interface RootState {
@@ -23,7 +22,6 @@ export interface RootState {
 }
 
 export interface MainProps {
-    // history: History
     // match: match
 }
 
@@ -136,7 +134,6 @@ export interface SummonerHeaderProps {
 }
 
 export interface NavigationBarProps {
-    history: History
 }
 
 export interface NavigationBarState {
