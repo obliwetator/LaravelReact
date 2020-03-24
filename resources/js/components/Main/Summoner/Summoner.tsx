@@ -5,7 +5,7 @@ import SummonerHeader from './SummonerHeader'
 import { Tab, Tabs } from 'react-bootstrap';
 import { Summary } from "./pages/Summary";
 import LiveGame from './pages/LiveGame';
-import {SummonerProps, SummonerState}  from "../../ReactInterfaces/RootInterface";
+import {SummonerProps, SummonerState, AxiosSummonerResponse}  from "../../ReactInterfaces/RootInterface";
 import { Summoner as SummonerClass} from "../../../ClassInterfaces/Summoner";
 
 import { LeagueSummoner } from "../../../ClassInterfaces/LeagueSummoner";
@@ -27,7 +27,6 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
       summonerSpells: null,
       champions: null,
       currentTab: "summary",
-      runes: null
     };
   }
 
@@ -53,8 +52,7 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
     })
 
   }
-// TODO
-  GetSummonerLeagueTarget = (summoner: any) => {
+  GetSummonerLeagueTarget = (summoner: SummonerClass) => {
     return axios.post('/api/getSummonerLeagueTarget', {
       region: this.state.region,
       summonerId: summoner.id
@@ -108,11 +106,11 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
       this.GetChampions(),
       this.GetRunes(),
     ])
-      .then(axios.spread((Summoner: AxiosResponse<SummonerClass>, Items, Icons, SummonerSpells, Champions, Runes) => {
+      .then(axios.spread((Summoner: AxiosResponse<AxiosSummonerResponse>, Items, Icons, SummonerSpells, Champions, Runes) => {
         if (this._isMounted) {
           this.setState({
-            [Summoner.data.name.replace(/\s/g, '').toLowerCase()]: Summoner.data,
-            summonerName: Summoner.data.name.replace(/\s/g, '').toLowerCase(),
+            [Summoner.data.summoner.name.replace(/\s/g, '').toLowerCase()]: Summoner.data,
+            summonerName: Summoner.data.summoner.name.replace(/\s/g, '').toLowerCase(),
             items: Items.data,
             icons: Icons.data,
             summonerSpells: SummonerSpells.data,
@@ -120,13 +118,13 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
             runes: Runes.data,
           })
           axios.all([
-            this.GetSummonerLeagueTarget(Summoner.data)
+            this.GetSummonerLeagueTarget(Summoner.data.summoner)
           ]).then(axios.spread((SummonerLeagueTarget) =>{
-            let property = "summonerLeagueTarget" + Summoner.data.name.replace(/\s/g, '').toLowerCase()
-
+            let property = "summonerLeagueTarget" + Summoner.data.summoner.name.replace(/\s/g, '').toLowerCase()
             this.setState({
-              // [property]: SummonerLeagueTarget.data,
-              isLoaded: true,
+              [property]: SummonerLeagueTarget.data,
+            }, () => {
+              this.setState({ isLoaded: true})
             })
           })).catch((error) => {
             this.setState({
@@ -134,7 +132,7 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
             })
           })
           
-          document.title = Summoner.data.name
+          document.title = Summoner.data.summoner.name
         }
       }))
       .catch((error) => {
@@ -170,7 +168,6 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
               summonerName: Data.data.summoner.name.replace(/\s/g, '').toLowerCase(),
               isLoaded: true,
             })
-            
             axios.all([
               this.GetSummonerLeagueTarget(Data.data.summoner)
             ]).then(axios.spread((SummonerLeagueTarget: AxiosResponse<LeagueSummoner>) =>{
@@ -207,7 +204,6 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
 }
 
   render() {
-    // const { error, isLoaded, summonerName } = this.state
     if (this.state.error) {
       return <NotFound error={this.state.error} />
     }
@@ -234,13 +230,13 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
               <Tabs onSelect={this.handleTab} activeKey={this.state.currentTab} id="uncontrolled-tab-example">
                 <Tab eventKey="summary" title="Summary">
                   <Summary 
-                    runes = {this.state.runes}
+                    runes = {this.state.runes!}
                     summoner = {this.state[this.state.summonerName].summoner}
                     gamesById = {this.state[this.state.summonerName].gamesById}
                     champions = {this.state.champions}
                     summonerSpells = {this.state.summonerSpells}
                     items = {this.state.items}
-                    {...this.state["summonerLeagueTarget" + this.state.summonerName]}
+                    leagueTarget = {this.state["summonerLeagueTarget" + this.state.summonerName]}
                   />
                 </Tab>
                 <Tab eventKey="champions" title="Champions">

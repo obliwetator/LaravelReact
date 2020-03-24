@@ -165,6 +165,26 @@ class ApiController extends Controller
         return response()->json($summonerLeague);
     }
 
+    public function lookup(Request $request) 
+    {
+        // throw new Exception("unimplemented");
+        if (count($request->all()) == 3) {
+            $name = $request->get("name");
+            $region = $request->get("region");
+            $championId = $request->get("champion");
+            $summoner = $this->LeagueDB()->getSummoner($name);
+            $matchlist = $this->LeagueDB()->getMatchlist($summoner->accountId, 90, null, null, 35);
+            echo json_encode($summoner);
+            die;
+        }
+        else{
+            die("missing parameters");
+        }
+
+
+
+    }
+
     // Static Endpoints
     public function getIcons()
     {

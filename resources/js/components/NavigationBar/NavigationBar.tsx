@@ -60,7 +60,6 @@ class NavigationBar extends React.Component<RouteComponentProps<NavigationBarPro
   };
   // TODO more :any
   handleRoute = (route: string) => () => {
-    console.log(this.props)
     this.props.history.push({ pathname: route });
   };
 

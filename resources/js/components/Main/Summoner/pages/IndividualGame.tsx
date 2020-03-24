@@ -13,7 +13,7 @@ export default class IndividualGame extends React.Component<IndividualGameProps,
 	}
 
 	componentDidMount() {
-		console.log("individual game content" ,this.props)
+		
 	}
 
 	componentDidUpdate() {

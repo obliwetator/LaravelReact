@@ -18,7 +18,12 @@ export default class CreateGame extends React.Component<CreateGameProps, CreateG
     }
 
     componentDidMount() {
-        
+        // Find the id(index) of the summoner we are looking for
+        this.props.match.participantIdentities.forEach((participantIdentities, j) => {
+            if (participantIdentities.player.summonerId == this.props.summoner.id) {
+                this.setState({target: j})
+            }
+        })
     }
 
     componentDidUpdate() {
@@ -48,7 +53,7 @@ export default class CreateGame extends React.Component<CreateGameProps, CreateG
 
         self.inWords = function (timeAgo: number) {
             // TODO Potential * 1000 is not needed
-            var seconds = Math.floor((new Date().getTime() * 1000 - timeAgo) / 1000),
+            var seconds = Math.floor((new Date().getTime() - timeAgo) / 1000),
                 separator = this.locales.separator || ' ',
                 words = this.locales.prefix + separator,
                 interval = 0,
@@ -102,18 +107,11 @@ export default class CreateGame extends React.Component<CreateGameProps, CreateG
 
     }
     render() {
-        let GameDetails
-        if (this.state.IsPressed && !this.state.IsLoaded) {
-            GameDetails =                 
+        if (this.state.IsPressed && !this.state.IsLoaded) {            
             <div className="GameDetails">
                 <IndividualGame {...this.props.match}/>
-            </div>    
+            </div>
         }
-        this.props.match.participantIdentities.forEach((participantIdentities, j) => {
-            if (participantIdentities.player.summonerId == this.props.summoner.id) {
-                this.setState({target: j})
-            }
-        })
         return (
             <div className="GameItemWrap">
                 <div>Game ID: {this.props.match.gameId} (temp)</div>
@@ -142,8 +140,8 @@ export default class CreateGame extends React.Component<CreateGameProps, CreateG
                     </div>
                     {/* Innactive accounts might not have played with the new rune system. If so dont display them at all */}
                     <div className="Runes d-inline-block">
-                        <Runes Id={ this.props.runes[this.props.match.participants[this.state.target].stats.perk0].icon}/>
-                        <Runes Id={ this.props.runes[this.props.match.participants[this.state.target].stats.perkSubStyle].icon}/>
+                        <Runes Id={ this.props.runes![this.props.match.participants[this.state.target].stats.perk0].icon}/>
+                        <Runes Id={ this.props.runes![this.props.match.participants[this.state.target].stats.perkSubStyle].icon}/>
                     </div>
                     <div className="ChampionName">
                         <a href="/champions/{{$champions->data[$champion[$key]]->name}}/statistics" target="_blank"></a>
@@ -186,7 +184,7 @@ export default class CreateGame extends React.Component<CreateGameProps, CreateG
                     </div>
                 </div>
                 <div className="GameDetails">
-                    {GameDetails}
+                    {/* {GameDetails} */}
                 </div>
                 <hr className="bg-success"></hr>
             </div>

@@ -13,6 +13,7 @@ import { GameByID } from "../../ClassInterfaces/GameById";
 import { Icons } from "../../ClassInterfaces/Icons";
 import { Items } from '../../ClassInterfaces/Items';
 import { History } from 'history';
+import { Matchlist } from '../../ClassInterfaces/Matchlist';
 
 export interface RootProps {
 }
@@ -38,19 +39,19 @@ export interface SummonerState {
     [k:string]: any
     region?: any
     error: String | null
-    runes: RunesReforged | null
     isLoaded: Boolean
     summonerName: any
+    currentTab: string
     items: any
     icons: any
     summonerSpells: any
     champions: any
-    currentTab: string
+    runes?: RunesReforged
 }
 
 export interface CreateGameProps {
+    runes: RunesReforged | null
     match: GameByID
-    runes: RunesReforged
     summoner: Summoner
     champions: Champions
     summonerSpells: SummonerSpells
@@ -111,7 +112,7 @@ export interface SummaryProps {
     items: Items
     gamesById: GameByID[]
     summoner: Summoner
-    LeagueTarget: LeagueSummoner
+    leagueTarget: LeagueSummoner
 }
 
 export interface SummaryState {
@@ -120,8 +121,8 @@ export interface SummaryState {
 }
 
 export interface CreateGamesListProps {
+    runes: RunesReforged | null
     gamesById: GameByID[]
-    runes: RunesReforged
     summoner: Summoner
     champions: Champions
     summonerSpells: SummonerSpells
@@ -143,6 +144,12 @@ export interface NavigationBarState {
     region: string
     regionValue: string
     darkMode: boolean
+}
+
+export interface AxiosSummonerResponse {
+    summoner: Summoner
+    matchlist: Matchlist[]
+    gamesById: GameByID[]
 }
 
 export interface Props {

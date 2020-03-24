@@ -43,7 +43,7 @@ class dbCall
 		SET_PLATFORM                 = 'SET_PLATFORM',
 		SET_API_BASEURL              = 'SET_API_BASEURL';
 
-		const
+	const
 		//  List of required setting keys
 		SETTINGS_REQUIRED = [
 			self::SET_REGION,
@@ -56,6 +56,9 @@ class dbCall
 		],
 		SETTINGS_INIT_ONLY = [
 		];
+	const 
+		SUMMONER_REFRESH = 60 * 60 * 24, // 1 day
+		MATCHLIST_REFRESH = 60 * 60 //  
 
 	/**
 	 *   Contains current settings.
@@ -329,9 +332,7 @@ class dbCall
 	public function getMatchlist(string $accountId, int $limit, $queue = null, $season = null, $champion = null, $beginTime = null, $endTime = null, $beginIndex = null)
 	{
 		$selectQuery = "SELECT * FROM `matchlist_$this->region` WHERE `accountId` = '$accountId' ORDER BY `matchlist_$this->region`.`timestamp` DESC LIMIT $limit";
-
 		$resultAssoc = $this->makeDbCallGet($selectQuery);
-
 		// No matchlist in DB
 		if ($resultAssoc == null)
 		{

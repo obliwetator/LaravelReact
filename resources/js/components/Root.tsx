@@ -18,7 +18,6 @@ export default class Root extends React.Component<RootProps, RootState> {
 	}
 	
 	render() {
-		console.log("root" , this.props)
 		return (
 			<Router>
 				<Main></Main>

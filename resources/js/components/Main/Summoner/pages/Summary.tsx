@@ -10,18 +10,15 @@ import { Ranked } from '../../../../ClassInterfaces/LeagueSummoner';
 export class Summary extends React.Component<SummaryProps, SummaryState> {
     constructor(props: SummaryProps) {
         super(props);
-
         this.state = {
             chart!: null,
             currentTab: "TotalGames"
         };
-
     }
-
     
     componentDidMount() {
         // [0] = WIN, [1] = LOSS
-        let WinLoss = [0,0]
+        let WinLoss: [number, number] = [0,0]
         
         let target = []
         this.props.gamesById.forEach((match, i) => {
@@ -42,7 +39,7 @@ export class Summary extends React.Component<SummaryProps, SummaryState> {
         this.InitChart(WinLoss)
     }
 
-    InitChart = (WinLoss: number[]) => {
+    InitChart = (WinLoss: [number, number]) => {
         let data = {
             labels: ['Win', 'Loss'],
             datasets: [{
@@ -65,7 +62,7 @@ export class Summary extends React.Component<SummaryProps, SummaryState> {
                 display: false,
             }
         }
-
+        // work around in TS
         let ctx = document.getElementById('myChart') as HTMLCanvasElement
         ctx.getContext('2d')
         let chart = new Chart(ctx, {
@@ -77,7 +74,7 @@ export class Summary extends React.Component<SummaryProps, SummaryState> {
         this.setState({ chart : chart})
     }
 
-    UpdateChart = (WinLoss: number[]) => {
+    UpdateChart = (WinLoss: [number, number]) => {
         if (this.state.chart?.data.datasets !== undefined) {
             this.state.chart.data.datasets.forEach((dataset) => {
                 if (dataset.data !== undefined) {
@@ -93,7 +90,7 @@ export class Summary extends React.Component<SummaryProps, SummaryState> {
 
     componentDidUpdate() { 
         // [0] = WIN, [1] = LOSS
-        let WinLoss = [0,0]
+        let WinLoss: [number, number] = [0,0]
 
         let target = []
         this.props.gamesById.forEach((match, i) => {
@@ -115,20 +112,18 @@ export class Summary extends React.Component<SummaryProps, SummaryState> {
     }
 
     chartButton = (event: React.MouseEvent<HTMLButtonElement>) => {
-        // console.log(this.state.chart.data.datasets[0].data)
+        console.log(this.state.chart?.data.datasets![0])
     }
 
     handleTab = (event: any) => {
         this.setState({
             currentTab: event
         })
-        console.log(event)
     }
 
 
     render() {
-        const { RANKED_FLEX_SR, RANKED_SOLO_5x5, RANKED_TFT} = this.props.LeagueTarget
-
+        const { RANKED_FLEX_SR, RANKED_SOLO_5x5, RANKED_TFT} = this.props.leagueTarget
         return (
             <div className="row">
                 <div className="col-md-3" >
@@ -187,7 +182,7 @@ function RankedSoloGames(props: {tabs: string}) {
 
 function SOLO(props: Ranked) {
     // If SOLO rank isset
-    if (Object.entries(props).length !== 0) {
+    if (Object.keys(props).length !== 0) {
         return (
             <>
                 {/* isset summoer target league solo*/}
@@ -225,7 +220,7 @@ function SOLO(props: Ranked) {
 }
 function FLEX(props: Ranked) {
     // If FLEX rank isset
-    if (Object.entries(props).length !== 0) {
+    if (Object.keys(props).length !== 0) {
         return (
             <div>
                 <div className="d-inline-block align-middle">
@@ -266,15 +261,13 @@ function FLEX(props: Ranked) {
 
 
 function CreateGamesList(props: CreateGamesListProps) {
-    let game = props.gamesById.map((match, i) => {
+    let game = props.gamesById.map((match, i) => (
         // Find the summoner we are looking for
-        return (
-            <CreateGame runes={props.runes} key={i} match={match} summoner={props.summoner} champions={props.champions} summonerSpells={props.summonerSpells} items={props.items} />
-        )
-    })
+        <CreateGame runes={props.runes} key={i} match={match} summoner={props.summoner} champions={props.champions} summonerSpells={props.summonerSpells} items={props.items} />
+    ))
     return (
-        <React.Fragment>
-            game
-        </React.Fragment>
+        <>
+            {game}
+        </>
     )
 }

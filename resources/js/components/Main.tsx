@@ -13,11 +13,11 @@ import Summoner from "./Main/Summoner/Summoner";
 import NavigationBar from "./NavigationBar/NavigationBar";
 
 import {MainProps, MainState} from "./ReactInterfaces/RootInterface";
+import { Lookup } from './Main/Lookup/Lookup';
 
 class Main extends React.Component<RouteComponentProps<MainProps>, MainState> {
   constructor(props: RouteComponentProps<MainProps>) {
     super(props);
-    console.log("main",props)
   }
 
   render() {
@@ -25,15 +25,18 @@ class Main extends React.Component<RouteComponentProps<MainProps>, MainState> {
       <div className="dark">
         <NavigationBar {...this.props}/>
         <Switch>
-          {console.log(this.props.location.pathname)}
           <Route exact path="/" component={Welcome} />
           <Route exact path="/champions" component={Champions} />
           <Route exact path="/stats" />
           <Route exact path="/leaderboards" />
           {/* <Route path="/summoner" component={Summoner} /> */}
           <Route
-            path="/summoner/:region/:name"
+            exact path="/summoner/:region/:name"
             component={Summoner}
+          />
+          <Route 
+            exact path="/lookup/:region/:name/:champion"
+            component={Lookup}
           />
 
           {/* <Route path="*" component={NotFound} /> */}
