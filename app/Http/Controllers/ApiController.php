@@ -46,7 +46,8 @@ class ApiController extends Controller
     
     /** @var string $region */
     public $region;
-	
+    
+    const MATCHLIST_GAMES_AMMOUNT = 5;
 
     public function __construct(Request $name)
     {
@@ -130,7 +131,6 @@ class ApiController extends Controller
     public function GetSummonerLeagueTarget(Request $request)
     {
         $summonerId = $request->get("summonerId");
-        
         $summonerLeagueTarget = $this->LeagueDB()->getLeagueSummonerSingle($summonerId);
 
 		return response()->json($summonerLeagueTarget);
@@ -180,18 +180,44 @@ class ApiController extends Controller
         else{
             die("missing parameters");
         }
+    }
+    public function getMatchlist(Request $request)
+    {
+        $accountId = $request->get("accountId");
+        $lastMatch = $request->get("lastMatch");
 
+
+
+        // We will always (after some basic time validation) get the current matchlist from the API
+        $apiMatchlist = $this->LeagueAPI()->getMatchlist($accountId, null, null, null, null, null, null, null);
+
+        // If the last game we have in our DB is the same as the current last macth on the client do nothing
+        // TODO: Send some error message tht is handled by the client side
+        if ($apiMatchlist->matches[0]->gameId == $lastMatch) {
+            // do nothing
+            echo null;
+        }
+        else {
+            $this->LeagueDB()->setMatchlist($apiMatchlist, $accountId);
+            // return a part of the array
+            $matchlist = array_slice($apiMatchlist->matches, 0, 5);
+            // Get 10 games
+            for ($i=0; $i < 5; $i++) { 
+                $gameIds[$i] = $apiMatchlist->matches[$i]->gameId;
+            }
+            $gamesById = $this->LeagueAPI()->getMatchById($gameIds);
+            $this->LeagueDB()->setMatchById($gamesById);
+            $data = ["matchlist" => $matchlist, "gamesById" => $gamesById];
+            echo json_encode($data);
+        }
 
 
     }
-
     // Static Endpoints
     public function getIcons()
     {
-        ob_start('ob_gzhandler');
-
+        // ob_start('ob_gzhandler');
 		$icons = $this->LeagueAPI()->getStaticProfileIcons();
-        
         return response()->json($icons);
     }
     public function getSummonerSpells()

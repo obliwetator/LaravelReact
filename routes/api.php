@@ -31,5 +31,6 @@ Route::post('/getSummonerLeagueTarget', 'ApiController@GetSummonerLeagueTarget')
 Route::post('/getRunes', 'ApiController@getRunes');
 Route::post('/getSummonerLiveGame', 'ApiController@getSummonerLiveGame');
 Route::post('/lookup', 'ApiController@lookup');
-
 Route::post('/getLeagues', 'ApiController@getLeagues');
+
+Route::post('/getMatchlist', 'ApiController@getMatchlist');

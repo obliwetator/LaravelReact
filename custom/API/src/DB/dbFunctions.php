@@ -58,7 +58,7 @@ class dbCall
 		];
 	const 
 		SUMMONER_REFRESH = 60 * 60 * 24, // 1 day
-		MATCHLIST_REFRESH = 60 * 60 //  
+		MATCHLIST_REFRESH = 60 * 60; //  
 
 	/**
 	 *   Contains current settings.
@@ -231,9 +231,7 @@ class dbCall
 	{
 		$summonerName = str_replace(' ', '', $summonerName);
 		
-
 		$selectQuery = "SELECT * FROM `summoner_$this->region` WHERE `trimmedName` = '$summonerName'";
-
 		$resultAssoc = $this->makeDbCallGet($selectQuery);
 
 		// First time we lookup. If it doesn't exist make an API request and put it in the DB.
@@ -373,13 +371,10 @@ class dbCall
 			$selectQuery2 .= "SELECT * FROM `matchlist_$this->region` WHERE `gameId` = '$matches->gameId' AND `accountId` = '$accountId';";
 		}
 
-
 		// Returns an array with the format $dbMatchlist[]["propertyName"]
 		$dbMatchlist = $this->makeDbCallGetMulti($selectQuery2);
 
-
 		// We get the game that matches the gameIds in our DB and check them up against the API data to decide which games we will store in our DB
-
 			for ($i = 0; $i < sizeof($dbMatchlist); $i++) {
 				// We will create the sql query if we DONT have the game in our db
 				// If we dont have the game in our DB the value of dbMatchlist array at that index will be NULL
@@ -688,8 +683,9 @@ class dbCall
 		$data = $this->makeDbCallGet($selectQuery);
 		// We have the some data in our DB
 		if (isset($data)) {
-			// Can return as a nested or single array
-			if (in_array([], $data)) {
+			// The value can be a single array or a nested array with at least 2 elements
+			// if it's a nested array
+			if (isset($data[0])) {
 				foreach ($data as $key => $value) {
 					$entry[$value["queueType"]] = new Objects\LeagueSummoner($value);
 				}

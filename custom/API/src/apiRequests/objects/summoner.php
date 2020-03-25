@@ -21,6 +21,10 @@ class Summoner extends objectInit
 	public $summonerLevel;
 	/** @var string $trimmedName */
 	public $trimmedName;
+	/** @var string $lastUpdate */
+	public $lastUpdate;
+	/** @var string $lastUpdateMatchlist */
+	public $lastUpdateMatchlist;
 
 
 	public function nameInputSanitization($name)
