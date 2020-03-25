@@ -13,12 +13,14 @@ export default class CreateGame extends React.Component<CreateGameProps, CreateG
             ShowMore: "More",
             IsPressed: false,
             IsLoaded: false,
+            IsComponentLoaded: false,
         }
-
     }
 
     componentDidMount() {
         // Find the id(index) of the summoner we are looking for
+        // When we refresh for new game, the new games wont go through this function since they are already mounted
+        // Only the new games will do it
         this.props.match.participantIdentities.forEach((participantIdentities, j) => {
             if (participantIdentities.player.summonerId == this.props.summoner.id) {
                 this.setState({target: j})
@@ -26,8 +28,17 @@ export default class CreateGame extends React.Component<CreateGameProps, CreateG
         })
     }
 
-    componentDidUpdate() {
-
+    componentDidUpdate(prevProps: CreateGameProps) {
+        // When there is an update we just check if the previous game is same as the new
+        // This will happen when we refresh the matchlist 
+        // See above  
+        if (prevProps.match.gameId != this.props.match.gameId) {
+            this.props.match.participantIdentities.forEach((participantIdentities, j) => {
+                if (participantIdentities.player.summonerId == this.props.summoner.id) {
+                    this.setState({target: j})
+                }
+            })
+        }
     }
 
     TimeAgo = (function () {
@@ -128,7 +139,7 @@ export default class CreateGame extends React.Component<CreateGameProps, CreateG
     
                     </div>
                     <div className="GameLength">
-                        {(this.props.match.gameDuration / 60).toFixed(0)}m {this.props.match.gameDuration % 60}s
+                        {Math.floor(this.props.match.gameDuration / 60 )}m {this.props.match.gameDuration % 60}s
                     </div>
                 </div>
                 <div className="GameSettingsInfo" style={{ display: 'table-cell', verticalAlign: 'middle' }}>

@@ -81,7 +81,6 @@ export class Summary extends React.Component<SummaryProps, SummaryState> {
                     dataset.data[0] = WinLoss[0];
                     dataset.data[1] = WinLoss[1];
                 }
-
             });
             this.state.chart.update()
         }
@@ -91,12 +90,9 @@ export class Summary extends React.Component<SummaryProps, SummaryState> {
     componentDidUpdate() { 
         // [0] = WIN, [1] = LOSS
         let WinLoss: [number, number] = [0,0]
-
-        let target = []
         this.props.gamesById.forEach((match, i) => {
             match.participantIdentities.forEach((participantIdentities, j) => {
                 if (participantIdentities.player.summonerId == this.props.summoner.id) {
-                    target.push(j)
                     if (match.participants[j].teamId === 100) {
                         // Left Team
                         match.teams[0].win == "Win" ? WinLoss[0] += 1: WinLoss[1] += 1

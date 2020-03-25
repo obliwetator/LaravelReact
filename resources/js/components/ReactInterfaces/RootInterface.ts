@@ -47,6 +47,12 @@ export interface SummonerState {
     summonerSpells: any
     champions: any
     runes?: RunesReforged
+    IsButtonLoading: boolean
+}
+
+export interface AxiosMatchlistResponse {
+    matchlist: Matchlist[]
+    gamesById: GameByID[]
 }
 
 export interface CreateGameProps {
@@ -63,6 +69,7 @@ export interface CreateGameState {
     IsPressed: Boolean
     IsLoaded: Boolean
     target: number
+    IsComponentLoaded: boolean
 }
 
 export interface IndividualGameProps extends GameByID {
@@ -130,8 +137,10 @@ export interface CreateGamesListProps {
 }
 
 export interface SummonerHeaderProps {
+    action: any
     icons: Icons
     summoner: Summoner
+    IsLoading: boolean
 }
 
 export interface NavigationBarProps {
