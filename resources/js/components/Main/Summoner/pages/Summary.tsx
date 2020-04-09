@@ -12,31 +12,12 @@ export class Summary extends React.Component<SummaryProps, SummaryState> {
         super(props);
         this.state = {
             chart!: null,
-            currentTab: "TotalGames"
+            currentTab: "TotalGames",
         };
     }
     
     componentDidMount() {
-        // [0] = WIN, [1] = LOSS
-        let WinLoss: [number, number] = [0,0]
-        
-        let target = []
-        this.props.gamesById.forEach((match, i) => {
-            match.participantIdentities.forEach((participantIdentities, j) => {
-                if (participantIdentities.player.summonerId == this.props.summoner.id) {
-                    target.push(j)
-                    if (match.participants[j].teamId === 100) {
-                        // Left Team
-                        match.teams[0].win == "Win" ? WinLoss[0] += 1: WinLoss[1] += 1
-                    }
-                    else {
-                        // Right Team
-                        match.teams[1].win == "Win" ? WinLoss[0] += 1: WinLoss[1] += 1
-                    }
-                }
-            })
-        })
-        this.InitChart(WinLoss)
+        this.InitChart(this.props.WinLoss)
     }
 
     InitChart = (WinLoss: [number, number]) => {
@@ -74,12 +55,12 @@ export class Summary extends React.Component<SummaryProps, SummaryState> {
         this.setState({ chart : chart})
     }
 
-    UpdateChart = (WinLoss: [number, number]) => {
+    UpdateChart = () => {
         if (this.state.chart?.data.datasets !== undefined) {
             this.state.chart.data.datasets.forEach((dataset) => {
                 if (dataset.data !== undefined) {
-                    dataset.data[0] = WinLoss[0];
-                    dataset.data[1] = WinLoss[1];
+                    dataset.data[0] = this.props.WinLoss[0];
+                    dataset.data[1] = this.props.WinLoss[1];
                 }
             });
             this.state.chart.update()
@@ -87,24 +68,8 @@ export class Summary extends React.Component<SummaryProps, SummaryState> {
 
     }
 
-    componentDidUpdate() { 
-        // [0] = WIN, [1] = LOSS
-        let WinLoss: [number, number] = [0,0]
-        this.props.gamesById.forEach((match, i) => {
-            match.participantIdentities.forEach((participantIdentities, j) => {
-                if (participantIdentities.player.summonerId == this.props.summoner.id) {
-                    if (match.participants[j].teamId === 100) {
-                        // Left Team
-                        match.teams[0].win == "Win" ? WinLoss[0] += 1: WinLoss[1] += 1
-                    }
-                    else {
-                        // Right Team
-                        match.teams[1].win == "Win" ? WinLoss[0] += 1: WinLoss[1] += 1
-                    }
-                }
-            })
-        })
-        this.UpdateChart(WinLoss)
+    componentDidUpdate(prevProps: any) { 
+        this.UpdateChart()
     }
 
     chartButton = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -136,11 +101,12 @@ export class Summary extends React.Component<SummaryProps, SummaryState> {
                                         <div style={{ width: "100px", height: "100px" }}>
                                             <canvas id="myChart" width="100px" height="100px"></canvas>
                                         </div>
-                                        <button className="btn btn-primary" onClick={this.chartButton}>Chart Values</button>
+                                        <button className="btn btn-primary" onClick={this.chartButton}>Chart Values (temp)</button>
                                     </div>
                                     {/* Each div is a game */}
                                     <div className="GameList">
-                                        <CreateGamesList {...this.props} />
+                                        <h2>The color intesity is temporary</h2>
+                                        <CreateGamesList target={this.props.targets} {...this.props} />
                                     </div>
                                 </div>
                             </Tab>
@@ -259,7 +225,7 @@ function FLEX(props: Ranked) {
 function CreateGamesList(props: CreateGamesListProps) {
     let game = props.gamesById.map((match, i) => (
         // Find the summoner we are looking for
-        <CreateGame runes={props.runes} key={i} match={match} summoner={props.summoner} champions={props.champions} summonerSpells={props.summonerSpells} items={props.items} />
+        <CreateGame target={props.target[i]} runes={props.runes} key={i} match={match} summoner={props.summoner} champions={props.champions} summonerSpells={props.summonerSpells} items={props.items} />
     ))
     return (
         <>
