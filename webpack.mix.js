@@ -16,7 +16,7 @@ mix.sass('resources/sass/app.scss', 'public/css');
 // mix.react('resources/js/app.js', 'public/js').sourceMaps()
 
 mix
-  .react("resources/js/app.js", "public/js")
+  .ts("resources/js/app.js", "public/js")
   .sourceMaps()
   .webpackConfig({
     module: {
@@ -34,7 +34,7 @@ mix
   });
 // mix.react('resources/js/upload.js', 'public/js').sourceMaps()
 mix
-  .react("resources/js/upload.js", "public/js")
+  .ts("resources/js/upload.js", "public/js")
   .sourceMaps()
   .webpackConfig({
     module: {
@@ -51,13 +51,13 @@ mix
     }
   });
 
-mix.browserSync({ 
-  proxy: 'http://127.0.0.1:8000/',
-  ignore: {
-    ignoreInitial: true,
-    ignored: '*.css'
-},
-});
+// mix.browserSync({ 
+//   proxy: 'http://127.0.0.1:8000/',
+//   ignore: {
+//     ignoreInitial: true,
+//     ignored: '*.css'
+// },
+// });
 
 if (mix.inProduction()) {
   mix.version();

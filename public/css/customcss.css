@@ -285,3 +285,11 @@
     display: inline-flex;
     margin-left: 5%;
   }
+
+  stats {
+	color: red
+}
+
+unique {
+	color:yellow;
+}
