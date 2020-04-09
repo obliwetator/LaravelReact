@@ -1,15 +1,15 @@
 import * as React from "react";
 import Image from 'react-bootstrap/Image'
 
-import { SummonerHeaderProps } from "../../ReactInterfaces/RootInterface";
-import { Button, Spinner } from "react-bootstrap";
+import { SummonerHeaderProps, SummonerHeaderState } from "../../ReactInterfaces/RootInterface";
+import { Button, Spinner, Alert } from "react-bootstrap";
 
-export default class SummonerHeader extends React.Component<SummonerHeaderProps,{}> {
+export default class SummonerHeader extends React.Component<SummonerHeaderProps, SummonerHeaderState> {
     constructor(props: SummonerHeaderProps) {
         super(props)
     }
-    render() {
 
+    render() {
     return (
         <div className="position-relative">
             <div className="d-inline-block">
@@ -32,7 +32,22 @@ export default class SummonerHeader extends React.Component<SummonerHeaderProps,
                     </Button> 
                 </div>
             </div>
+            {/* We handle different error codes here? */}
+            {this.props.code! !== null && this.props.code! == 0 && 
+                <Alert className="d-inline-block" variant="danger" show={this.props.isVisible}>Wait for next refresh</Alert>
+            }
+            {this.props.code! !== null && this.props.code! == 1 && 
+                <Alert className="d-inline-block" variant="primary" show={this.props.isVisible}>Your games are up to date</Alert>
+            }
+            {this.props.code! == null && 
+                <Alert className="d-inline-block" variant="danger" show={this.props.isVisible}>
+                    An unknown error occured. Riot's API might be unresponsive. 
+                    <br></br>
+                    Please try again later
+                </Alert>
+            }
         </div>
+        
     )
     }
 }
