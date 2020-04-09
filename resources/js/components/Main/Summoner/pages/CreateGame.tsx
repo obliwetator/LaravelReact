@@ -3,13 +3,14 @@ import * as React from 'react'
 import IndividualGame from './IndividualGame'
 
 import { ChampionImage, SummonerSpell, Runes, Item } from "../../Common/ImageComponents";
-import {CreateGameProps, CreateGameState} from "../../../ReactInterfaces/RootInterface";
+import { CreateGameProps, CreateGameState } from "../../../ReactInterfaces/RootInterface";
+import { GameByID } from '../../../../ClassInterfaces/GameById';
+import { Items } from '../../../../ClassInterfaces/Items';
 
 export default class CreateGame extends React.Component<CreateGameProps, CreateGameState> {
-    constructor(props: CreateGameProps){
+    constructor(props: CreateGameProps) {
         super(props)
         this.state = {
-            target: 0,
             ShowMore: "More",
             IsPressed: false,
             IsLoaded: false,
@@ -21,24 +22,14 @@ export default class CreateGame extends React.Component<CreateGameProps, CreateG
         // Find the id(index) of the summoner we are looking for
         // When we refresh for new game, the new games wont go through this function since they are already mounted
         // Only the new games will do it
-        this.props.match.participantIdentities.forEach((participantIdentities, j) => {
-            if (participantIdentities.player.summonerId == this.props.summoner.id) {
-                this.setState({target: j})
-            }
-        })
+
     }
 
     componentDidUpdate(prevProps: CreateGameProps) {
         // When there is an update we just check if the previous game is same as the new
         // This will happen when we refresh the matchlist 
         // See above  
-        if (prevProps.match.gameId != this.props.match.gameId) {
-            this.props.match.participantIdentities.forEach((participantIdentities, j) => {
-                if (participantIdentities.player.summonerId == this.props.summoner.id) {
-                    this.setState({target: j})
-                }
-            })
-        }
+
     }
 
     TimeAgo = (function () {
@@ -68,15 +59,14 @@ export default class CreateGame extends React.Component<CreateGameProps, CreateG
                 separator = this.locales.separator || ' ',
                 words = this.locales.prefix + separator,
                 interval = 0,
-                intervals: {[key:string] : number} = {
+                intervals: { [key: string]: number } = {
                     year: seconds / 31536000,
                     month: seconds / 2592000,
                     day: seconds / 86400,
                     hour: seconds / 3600,
                     minute: seconds / 60
                 }
-                
-            var inter 
+            var inter
             var distance = this.locales.seconds;
 
             for (var key in intervals) {
@@ -99,106 +89,151 @@ export default class CreateGame extends React.Component<CreateGameProps, CreateG
 
         return self;
     }());
-    
 
-    ShowDetails = (event : React.MouseEvent<HTMLButtonElement>) => {
+    ShowDetails = (event: React.MouseEvent<HTMLButtonElement>) => {
         if (this.state.IsPressed) {
             this.setState({
                 ShowMore: "More",
                 IsPressed: false
             })
         }
-        else{
+        else {
             this.setState({
                 ShowMore: "Less",
                 IsPressed: true,
-                IsLoaded: true,
             })
         }
 
     }
     render() {
-        if (this.state.IsPressed && !this.state.IsLoaded) {            
-            <div className="GameDetails">
-                <IndividualGame {...this.props.match}/>
-            </div>
+        let winner
+        // TODO: SAVE THE STATE OF THE WIN/LOSS
+        if (this.props.match.participants[this.props.target].teamId === 100) {
+            // Left Team
+            this.props.match.teams[0].win == "Win" ? winner = true : winner = false
         }
-        return (
-            <div className="GameItemWrap">
-                <div>Game ID: {this.props.match.gameId} (temp)</div>
-                <div>Summoner target {this.state.target} (temp)</div>
-                {/* This is the preview before we load the details */}
-                <div className="GameStats" style={{ display: 'table-cell' }}>
-                    <div className="GameType">
-                        {this.props.match.gameMode}
-                    </div>
-                    <div className="Timestamp">
-                        {this.TimeAgo.inWords(this.props.match.gameCreation)}
-                    </div>
-                    <div className="Bar">
-    
-                    </div>
-                    <div className="GameLength">
-                        {Math.floor(this.props.match.gameDuration / 60 )}m {this.props.match.gameDuration % 60}s
-                    </div>
-                </div>
-                <div className="GameSettingsInfo" style={{ display: 'table-cell', verticalAlign: 'middle' }}>
-                        <ChampionImage Id={this.props.champions.data[this.props.match.participants[this.state.target].championId].id} />
-                    <div className="SummonerSpell d-inline-block" style={{ verticalAlign: 'middle' }}>
-                        <SummonerSpell Id={this.props.summonerSpells.data[this.props.match.participants[this.state.target].spell1Id].id}/>
+        else {
+            // Right Team
+            this.props.match.teams[1].win == "Win" ? winner = true : winner = false
+        }
 
-                        <SummonerSpell Id={this.props.summonerSpells.data[this.props.match.participants[this.state.target].spell2Id].id}/>
+        let nameClass = winner ? "bg-primary" : "bg-danger"
+
+        // TODO: Add custom style e.g style={{backgroundColor: "rgb(177, 212, 175)", color: "black"}} OR Create a color class
+        return (
+            <div className={"" + nameClass}>
+                <div className="d-flex flex-row align-items-center">
+                    <div>
+                        <div className="">Game ID: {this.props.match.gameId} (temp)</div>
+                        <div>Summoner target {this.props.target} (temp)</div>
+                        <div className="GameType">
+                            {this.props.match.gameMode}
+                        </div>
+                        <div className="Timestamp">
+                            {this.TimeAgo.inWords(this.props.match.gameCreation)}
+                        </div>
+                        <div className="GameLength">
+                            {Math.floor(this.props.match.gameDuration / 60)}m {this.props.match.gameDuration % 60}s
+                    </div>
+                    </div>
+
+                    <div className="pr-1 pl-1">
+                        <ChampionImage Id={this.props.champions.data[this.props.match.participants[this.props.target].championId].id} />
+                    </div>
+                    <div className="pr-1">
+                        <SummonerSpell Description={this.props.summonerSpells.data[this.props.match.participants[this.props.target].spell1Id].description} Id={this.props.summonerSpells.data[this.props.match.participants[this.props.target].spell1Id].id} />
+
+                        <SummonerSpell Description={this.props.summonerSpells.data[this.props.match.participants[this.props.target].spell2Id].description} Id={this.props.summonerSpells.data[this.props.match.participants[this.props.target].spell2Id].id} />
                     </div>
                     {/* Innactive accounts might not have played with the new rune system. If so dont display them at all */}
-                    <div className="Runes d-inline-block">
-                        <Runes Id={ this.props.runes![this.props.match.participants[this.state.target].stats.perk0].icon}/>
-                        <Runes Id={ this.props.runes![this.props.match.participants[this.state.target].stats.perkSubStyle].icon}/>
+                    <div className="pr-1">
+                        <Runes Description={this.props.runes![this.props.match.participants[this.props.target].stats.perk0].longDesc} Id={this.props.runes![this.props.match.participants[this.props.target].stats.perk0].icon} />
+                        {/* There are no description for the perk style. Just send the name of the tree */}
+                        <Runes Description={this.props.runes![this.props.match.participants[this.props.target].stats.perkSubStyle].key} Id={this.props.runes![this.props.match.participants[this.props.target].stats.perkSubStyle].icon} />
                     </div>
                     <div className="ChampionName">
                         <a href="/champions/{{$champions->data[$champion[$key]]->name}}/statistics" target="_blank"></a>
                     </div>
-                </div>
-                <div className="KDA">
                     <div className="KDA">
+                        <div className="KDA">
+                            1/1/1
                     </div>
-                    <div className="KDARatio">
+                        <div className="KDARatio">
+                            ratio
                     </div>
-                </div>
-                <div className="Stats">
-                    <div className="Level">
                     </div>
-                    <div className="CS">
+                    <div className="Stats">
+                        <div className="Level">
+                            target champ level
                     </div>
-    
-                </div>
-                <div className="Items">
-                    <div className="ItemList">
+                        <div className="CS">
+                            CS (per/min)
                     </div>
-                    <div className="ControllWards">
+                        <div>
+                            KP
                     </div>
-                </div>
-                <div className="Participants">
-                    {/* Left block  */}
-                    <div className="Team">
-    
+                        <div>
+                            Averrage tier
                     </div>
-    
-                    <div className="Team">
-                    </div>
-                </div>
-                <div className="Stats Button">
-                    <div className="Content">
-                        <div className="Item">
-                            <span onClick={this.ShowDetails}>{this.state.ShowMore}</span>
 
+                    </div>
+                    <div className="Items" style={{ width: "5em" }}>
+                        <div className="ItemList d-flex flex-wrap">
+                            <ItemList match={this.props.match} items={this.props.items} target={this.props.target} />
+                        </div>
+                        <div className="ControllWards">
+                        </div>
+                    </div>
+                    <div className="Participants">
+                        {/* Left block  */}
+                        <div className="Team">
+
+                        </div>
+
+                        <div className="Team">
+                        </div>
+                    </div>
+                    <div className="Stats Button">
+                        <div className="Content">
+                            <div className="Item">
+                                <span onClick={this.ShowDetails}>{this.state.ShowMore}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div className="GameDetails">
-                    {/* {GameDetails} */}
+                <div className="d-flex flex-col   ">
+                    <div>
+                        {/* The game details are rendered on click and will stay mounted until the page refreshes */}
+                        <IndividualGame IsPressed={this.state.IsPressed} {...this.props.match} />
+                    </div>
+                    <hr className="bg-success"></hr>
                 </div>
-                <hr className="bg-success"></hr>
             </div>
         )
     }
 }
+
+interface ItemListProps {
+    match: GameByID
+    items: Items
+    target: number
+}
+
+function ItemList(props: ItemListProps) {
+
+    let itemIndex: string
+    let item = []
+    for (let index = 0; index < 7; index++) {
+        itemIndex = `item${index}`
+        item.push(props.match.participants[props.target].stats[itemIndex])
+    }
+    let Items = item.map((name, index) => {
+        return <Item key={index} Id={name} Description={props.items.data[name] ? props.items.data[name].description : null} />
+    })
+
+    return (
+        <>
+            {Items}
+        </>
+    )
+}   
