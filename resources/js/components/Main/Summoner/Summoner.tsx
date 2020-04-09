@@ -10,6 +10,7 @@ import { Summoner as SummonerClass} from "../../../ClassInterfaces/Summoner";
 
 import { LeagueSummoner } from "../../../ClassInterfaces/LeagueSummoner";
 import { Matchlist } from '../../../ClassInterfaces/Matchlist';
+import { GameByID } from '../../../ClassInterfaces/GameById';
 
 export default class Summoner extends React.Component<SummonerProps, SummonerState> {
   // Prevents a memory leak if we have an async request and dont update the state ( Eg we go forward or backward in the browser)
@@ -29,6 +30,8 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
       champions: null,
       currentTab: "summary",
       IsButtonLoading: false,
+      code: null,
+      isAlertVisible: false,
     };
     // We will call this function from <SummonerHeaders /> and bind "this" in order to change the state of this component (Summoner and/or matchlist)
     // All the logic to handling the refresh will be in here
@@ -100,36 +103,75 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
     const TimeSummoner = Math.round(new Date(this.state[this.state.summonerName].summoner.lastUpdate).getTime() / 1000)
     const TimeMatchlist = Math.round(new Date(this.state[this.state.summonerName].summoner.lastUpdateMatchlist).getTime() / 1000)
 
-    axios.post('/api/getMatchlist',{
+    axios.post('/api/getMatchlist', {
       region: this.state.region,
       accountId: this.state[this.state.summonerName].summoner.accountId,
-      lastMatch: this.state[this.state.summonerName].matchlist[0].gameId
+      lastMatch: this.state[this.state.summonerName].matchlist[0].gameId,
+      summonerRevision: this.state[this.state.summonerName].summoner.lastUpdate,
+      matchlistRevision: this.state[this.state.summonerName].summoner.lastUpdateMatchlist
 
     }).then((response: AxiosResponse<AxiosMatchlistResponse>) => {
-      // CAN RETURN NOTHING
-      if (!response.data) {
+      // If not data is present it will return some code
+      if (response.data.code !== undefined) {
+        // TODO: Handle the code and display an appropriate error message
+        // TODO: Create an enum for the codes to match the backend
+        // TODO: Set next time a user can refresh AND include it in the error message. See below for time validation
+
+        // We set IsAlertVisible to true in order to show an appropriate allrt in SummonerHeader.tsx
+        // We set a timeout so that the alert will dissapear after some time
         this.setState({
-          IsButtonLoading: false
+          code: response.data.code,
+          IsButtonLoading: false,
+          isAlertVisible: true
+        }, () => {
+          setTimeout(() => {
+            this.setState({
+              isAlertVisible: false
+            })
+          }, 3500);
         })
-      } 
+      }
       else {
+        // If we reach this point matchlist and gamesById are ALWAYS present
         var summonerState = this.state[this.state.summonerName]
         summonerState.matchlist = response.data.matchlist
         summonerState.gamesById = response.data.gamesById
+        // summoner isn't guaranteed to be returned
+        summonerState.summoner ? summonerState.summoner : summonerState.summoner = response.data.summoner
+
+        // Find the target summoner 
+        // [0] = WIN, [1] = LOSS
+        let WinLoss: [number, number] = [0,0]
+        let targetSummoner: number[] = []
+        response.data.gamesById!.forEach((match, i) => {
+          match.participantIdentities.forEach((participantIdentities, j) => {
+              if (participantIdentities.player.summonerId == this.state[this.state.summonerName].summoner.id) {
+                  targetSummoner.push(j)
+                  if (match.participants[j].teamId === 100) {
+                      // Left Team
+                      match.teams[0].win == "Win" ? WinLoss[0] += 1: WinLoss[1] += 1
+                  }
+                  else {
+                      // Right Team
+                      match.teams[1].win == "Win" ? WinLoss[0] += 1: WinLoss[1] += 1
+                  }
+              }
+          })
+      })
         this.setState({
-          [this.state.summonerName]: summonerState, 
+          [this.state.summonerName]: summonerState,
+          WinLoss: WinLoss,
+          target: targetSummoner,
           IsButtonLoading: false
         })
       }
     })
+    // TODO: Implement client side validation, use enums
     if (TimeNow - TimeSummoner < TIME_FOR_SUMMONER) {
     }
     else{
     }
 }
-
-  // this.state wont update unless this function finishes.
-  // We get the name from the location passed from the props
   componentDidMount() {
     this._isMounted = true;
     axios.all([
@@ -155,8 +197,27 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
             this.GetSummonerLeagueTarget(Summoner.data.summoner)
           ]).then(axios.spread((SummonerLeagueTarget) =>{
             let property = "summonerLeagueTarget" + Summoner.data.summoner.name.replace(/\s/g, '').toLowerCase()
+            let WinLoss: [number, number] = [0,0]
+            let targetSummoner: number[] = []
+            Summoner.data.gamesById!.forEach((match, i) => {
+              match.participantIdentities.forEach((participantIdentities, j) => {
+                  if (participantIdentities.player.summonerId == Summoner.data.summoner.id) {
+                      targetSummoner.push(j)
+                      if (match.participants[j].teamId === 100) {
+                          // Left Team
+                          match.teams[0].win == "Win" ? WinLoss[0] += 1: WinLoss[1] += 1
+                      }
+                      else {
+                          // Right Team
+                          match.teams[1].win == "Win" ? WinLoss[0] += 1: WinLoss[1] += 1
+                      }
+                  }
+              })
+          })
             this.setState({
               [property]: SummonerLeagueTarget.data,
+              WinLoss: WinLoss,
+              target: targetSummoner
             }, () => {
               this.setState({ isLoaded: true})
             })
@@ -181,9 +242,6 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
     let newSearch = this.props.match.params.name;
 
     if (prevSearch !== newSearch) {
-
-      console.log("prev seracg", prevProps)
-      console.log("this seracg", this.props)
       // When we search for a new summoner we save they summoner details in the state.
       // If we search for a new summoner or go back/formward in history we will check the state first before calling the server
       let name: string = this.props.match.params.name.replace(/\s/g, '')
@@ -191,19 +249,61 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
       if (name && this.state[name]) {
         // We update which summoner we are currently viewing. The summoner object with the same name should be in the state
         this.setState({ summonerName: this.props.match.params.name.replace(/\s/g, '') })
+        let WinLoss: [number, number] = [0,0]
+        let targetSummoner: number[] = []
+        this.state[this.props.match.params.name.replace(/\s/g, '')].gamesById!.forEach((match: GameByID, i: number) => {
+          match.participantIdentities.forEach((participantIdentities, j) => {
+              if (participantIdentities.player.summonerId == this.state[this.props.match.params.name.replace(/\s/g, '')].summoner.id) {
+                  targetSummoner.push(j)
+                  if (match.participants[j].teamId === 100) {
+                      // Left Team
+                      match.teams[0].win == "Win" ? WinLoss[0] += 1: WinLoss[1] += 1
+                  }
+                  else {
+                      // Right Team
+                      match.teams[1].win == "Win" ? WinLoss[0] += 1: WinLoss[1] += 1
+                  }
+              }
+          })
+        })
+        this.setState({
+          target: targetSummoner,
+          WinLoss: WinLoss,
+        })
+        
       }
       else {
-        console.log("else")
         // Will only refresh if the input is different from the previous
         this.handleSearch()
         axios.all([
           this.GetSummoner(),
         ]).then(axios.spread((Data) => {
-          console.log("data",Data)
             this.setState({
               [Data.data.summoner.name.replace(/\s/g, '').toLowerCase()]: Data.data,
               summonerName: Data.data.summoner.name.replace(/\s/g, '').toLowerCase(),
               isLoaded: true,
+            }, () => {
+              let WinLoss: [number, number] = [0,0]
+              let targetSummoner: number[] = []
+              this.state[this.props.match.params.name.replace(/\s/g, '')].gamesById!.forEach((match: GameByID, i: number) => {
+                match.participantIdentities.forEach((participantIdentities, j) => {
+                    if (participantIdentities.player.summonerId == this.state[this.props.match.params.name.replace(/\s/g, '')].summoner.id) {
+                        targetSummoner.push(j)
+                        if (match.participants[j].teamId === 100) {
+                            // Left Team
+                            match.teams[0].win == "Win" ? WinLoss[0] += 1: WinLoss[1] += 1
+                        }
+                        else {
+                            // Right Team
+                            match.teams[1].win == "Win" ? WinLoss[0] += 1: WinLoss[1] += 1
+                        }
+                    }
+                })
+              })
+              this.setState({
+                target: targetSummoner,
+                WinLoss: WinLoss,
+              })
             })
             axios.all([
               this.GetSummonerLeagueTarget(Data.data.summoner)
@@ -260,11 +360,13 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
       return (
         <>
           <div className="summoner-header">
-            <SummonerHeader action={this.handleRefresh} icons={this.state.icons} summoner={this.state[this.state.summonerName].summoner} IsLoading={this.state.IsButtonLoading} />
+            <SummonerHeader isVisible={this.state.isAlertVisible} code={this.state.code} action={this.handleRefresh} icons={this.state.icons} summoner={this.state[this.state.summonerName].summoner} IsLoading={this.state.IsButtonLoading} />
             <div className="Menu">
               <Tabs onSelect={this.handleTab} activeKey={this.state.currentTab} id="uncontrolled-tab-example">
                 <Tab eventKey="summary" title="Summary">
                   <Summary 
+                    WinLoss = {this.state.WinLoss!}
+                    targets = {this.state.target!}
                     runes = {this.state.runes!}
                     summoner = {this.state[this.state.summonerName].summoner}
                     gamesById = {this.state[this.state.summonerName].gamesById}
@@ -291,10 +393,9 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
                   />
                 </Tab>
               </Tabs>
-
             </div>
           </div>
-          <div className="summoner=stats">
+          <div className="summoner-stats">
 
           </div>
         </>
