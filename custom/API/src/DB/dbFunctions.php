@@ -370,33 +370,33 @@ class dbCall
 			$matches = $getMatchlist->matches[$i];
 			$selectQuery2 .= "SELECT * FROM `matchlist_$this->region` WHERE `gameId` = '$matches->gameId' AND `accountId` = '$accountId';";
 		}
-
 		// Returns an array with the format $dbMatchlist[]["propertyName"]
 		$dbMatchlist = $this->makeDbCallGetMulti($selectQuery2);
-
 		// We get the game that matches the gameIds in our DB and check them up against the API data to decide which games we will store in our DB
 			for ($i = 0; $i < sizeof($dbMatchlist); $i++) {
 				// We will create the sql query if we DONT have the game in our db
 				// If we dont have the game in our DB the value of dbMatchlist array at that index will be NULL
-
 				// We dont have the game in our DB. We will create the query
 				if ($dbMatchlist[$i] == null) {
 					// Makes the construction of the query easier
 					$match = $getMatchlist->matches[$i];
-					// If its the last element of the list we ad an ;
+					// If its the last element of the list we add an ;
 					if (sizeof($dbMatchlist) == $i + 1) {
 						$value .= "('$accountId', '$match->gameId', '$match->platformId', '$match->champion', '$match->queue', '$match->season', '$match->timestamp', '$match->role', '$match->lane');";
 					} else {
-						$value .= "('$accountId', '$match->gameId', '$match->platformId', '$match->champion', '$match->queue', '$match->season', '$match->timestamp', '$match->role', '$match->lane'), \n";
+						$value .= "('$accountId', '$match->gameId', '$match->platformId', '$match->champion', '$match->queue', '$match->season', '$match->timestamp', '$match->role', '$match->lane'),";
 					}
 				} else {
-					// We have the game in our DB. We do nothing in this case
+					// TODO More efficient solution?
+					break;
 				}
+			}
+			if (substr($value, -1) == ',') {
+				$value = substr_replace($value, ';', -1);
 			}
 			// We initialize the $value with "" so if default present is empty it means that the value isn't set
 		if ($value != "") {
 			$insertQuery = "INSERT INTO `matchlist_$this->region`(`accountId`, `gameId`,`platformId`,`champion`,`queue`, `season`, `timestamp`, `role`, `lane`) VALUES $value";
-
 			$this->makeDbCallSet($insertQuery);
 		} else {
 			// We have nothing to add to DB which means we do nothing
@@ -714,6 +714,21 @@ class dbCall
 		throw new Exception("Unimplemented");
 		return;
 	}
+
+	public function updateSummoner(Objects\Summoner $summoner)
+	{
+		$trimmedName = str_replace(' ', '', $summoner->name);
+		$updateQuery = "UPDATE `summoner_{$this->region}`SET `summonerLevel`='{$summoner->summonerLevel}',`name`='{$summoner->name}',`trimmedName`='{$trimmedName}', `profileIconId`='{$summoner->profileIconId}'WHERE `accountId`='{$summoner->accountId}'";
+		$this->makeDbCallSet($updateQuery);
+	}
+
+	public function updateUpdateSummonerLastMatchlist($nowUpdated, $accountId)
+	{
+		$now = date('Y-m-d H:i:s', $nowUpdated);
+		$updateQuery = "UPDATE `summoner_{$this->region}`SET `lastUpdateMatchlist`='{$now}' WHERE `accountId`='{$accountId}'";
+		$this->makeDbCallSet($updateQuery);
+	}
+
 	private function makeApiRequest()
 	{
 		$lol = new LeagueAPI([

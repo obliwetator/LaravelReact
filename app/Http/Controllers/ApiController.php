@@ -47,7 +47,13 @@ class ApiController extends Controller
     /** @var string $region */
     public $region;
     
-    const MATCHLIST_GAMES_AMMOUNT = 5;
+    const   MATCHLIST_GAMES_AMMOUNT = 5,
+            TIME_FOR_MATCHLIST = 60 * 5,
+            TIME_FOR_SUMMONER = 60 * 60 * 12;
+
+    const   REFRESH_TOO_EARLY = 0,
+            MATCHLIST_UP_TO_DATE = 1;
+    
 
     public function __construct(Request $name)
     {
@@ -184,18 +190,37 @@ class ApiController extends Controller
     public function getMatchlist(Request $request)
     {
         $accountId = $request->get("accountId");
-        $lastMatch = $request->get("lastMatch");
-
-
+        $lastMatchId = $request->get("lastMatch");
+        $summonerRevision = $request->get("summonerRevision");
+        $matchlistRevision = $request->get("matchlistRevision");
+        
+        $now = strtotime(date("Y-m-d H:i:s"));
 
         // We will always (after some basic time validation) get the current matchlist from the API
-        $apiMatchlist = $this->LeagueAPI()->getMatchlist($accountId, null, null, null, null, null, null, null);
+        if ($now - strtotime($matchlistRevision) > self::TIME_FOR_MATCHLIST) {
+            $apiMatchlist = $this->LeagueAPI()->getMatchlist($accountId, null, null, null, null, null, null, null);
+            if ($apiMatchlist == null) {
+                return ["code" => null];
+            }
+            // We go a new matchlist for that summoner. Update the corresponsing field for that summoner
+            $this->LeagueDB()->updateUpdateSummonerLastMatchlist($now, $accountId);
+        }
+        else {
+            return ["code" => self::REFRESH_TOO_EARLY];
+        }
+        // Refresh the summoner after the specified ammount of time has passed
+        // Since the summoner information changes very rslowly we can aavoid a lot of api calls
+        $summoner = null;
+        if ($now - strtotime($summonerRevision) > self::TIME_FOR_SUMMONER) {
+            $summoner = $this->LeagueAPI()->getSummonerAccountIdSingle($accountId);
+            $this->LeagueDB()->updateSummoner($summoner);
+        }
 
         // If the last game we have in our DB is the same as the current last macth on the client do nothing
         // TODO: Send some error message tht is handled by the client side
-        if ($apiMatchlist->matches[0]->gameId == $lastMatch) {
+        if ($apiMatchlist->matches[0]->gameId == $lastMatchId) {
             // do nothing
-            echo null;
+            return ["code" => self::MATCHLIST_UP_TO_DATE];
         }
         else {
             $this->LeagueDB()->setMatchlist($apiMatchlist, $accountId);
@@ -207,11 +232,9 @@ class ApiController extends Controller
             }
             $gamesById = $this->LeagueAPI()->getMatchById($gameIds);
             $this->LeagueDB()->setMatchById($gamesById);
-            $data = ["matchlist" => $matchlist, "gamesById" => $gamesById];
+            $data = ["matchlist" => $matchlist, "gamesById" => $gamesById, "summoner" => $summoner];
             echo json_encode($data);
         }
-
-
     }
     // Static Endpoints
     public function getIcons()
