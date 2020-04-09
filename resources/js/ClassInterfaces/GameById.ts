@@ -46,6 +46,7 @@ export interface Participant {
 }
 
 export interface Stats {
+    [key:string]: any
     participantId:                   number;
     win:                             boolean;
     item0:                           number;
