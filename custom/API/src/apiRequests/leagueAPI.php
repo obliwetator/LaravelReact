@@ -134,8 +134,6 @@ class LeagueAPI
 	/** @param string  $summonerName */
 	public function getSummonerNameSingle($summonerName)
 	{
-		$region = $this->setPlatform($this->settings[self::SET_REGION]);
-
 		$targetUrl = "https://{$this->region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{$summonerName}";
 
 		$data = curl($this->region, $targetUrl, $this->assoc);
@@ -151,14 +149,13 @@ class LeagueAPI
 		else{
 			return null;
 		}
-
 	}
 
-	public function getSummonerId(string $region, array $summonerId)
+	public function getSummonerId(array $summonerId)
 	{
 		foreach ($summonerId as $key => $summonerN) {
 			$summonerN = str_replace(' ', '', $summonerN);
-			$targetUrls[$key] = "https://{$region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{$summonerN}";
+			$targetUrls[$key] = "https://{$this->region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{$summonerN}";
 		}
 
 		$data = multiCurl($this->region, $targetUrls, $this->assoc);
@@ -173,11 +170,11 @@ class LeagueAPI
 		return $summoner;
 	}
 
-	public function getSummonerPuuId(string $region, array $puuId)
+	public function getSummonerPuuId(array $puuId)
 	{
 		foreach ($puuId as $key => $summonerN) {
 			$summonerN = str_replace(' ', '', $summonerN);
-			$targetUrls[$key] = "https://{$region}.api.riotgames.com/lol/summoner/v4/summoners/{$summonerN}";
+			$targetUrls[$key] = "https://{$this->region}.api.riotgames.com/lol/summoner/v4/summoners/{$summonerN}";
 		}
 
 		$data = multiCurl($this->region, $targetUrls, $this->assoc);
@@ -192,11 +189,11 @@ class LeagueAPI
 		return $summoner;
 	}
 
-	public function getSummonerAccountId(string $region, array $summonerAccountId)
+	public function getSummonerAccountId(array $summonerAccountId)
 	{
 		foreach ($summonerAccountId as $key => $summonerN) {
 			$summonerN = str_replace(' ', '', $summonerN);
-			$targetUrls[$key] = "https://{$region}.api.riotgames.com/lol/summoner/v4/summoners/by-account/{$summonerN}";
+			$targetUrls[$key] = "https://{$this->region}.api.riotgames.com/lol/summoner/v4/summoners/by-account/{$summonerN}";
 		}
 
 		$data = multiCurl($this->region, $targetUrls, $this->assoc);
@@ -209,12 +206,30 @@ class LeagueAPI
 		}
 
 		return $summoner;
+	}
+
+	public function getSummonerAccountIdSingle(string $summonerAccountId)
+	{
+		$targetUrl = "https://{$this->region}.api.riotgames.com/lol/summoner/v4/summoners/by-account/{$summonerAccountId}";
+
+		$data = curl($this->region, $targetUrl, $this->assoc);
+
+		if (isset($data)) {
+			$summoner = new Objects\Summoner($data);
+			// Remove Spaces and save name with proper capitalization
+			// $summoner->nameInputSanitization($summoner->name);
+			$summoner->trimmedName = str_replace(' ', '', $summoner->name);
+	
+			return $summoner;
+		}
+		else{
+			return null;
+		}
 	}
 
 	public function getMatchlist(string $accountId, int $queue = null, int $season = null, int $champion = null, int $beginTime = null, int $endTime = null, int $beginIndex = null, int $endIndex = null)
 	{
 		$targetUrl = "https://{$this->region}.api.riotgames.com/lol/match/v4/matchlists/by-account/{$accountId}";
-		
 
 		$additionalParameters['queue'] = $queue;
 		$additionalParameters['season'] = $season;
