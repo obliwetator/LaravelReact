@@ -66,18 +66,13 @@ function curl(string $region, $targetUrl, $assoc = false, $additionalParameters 
 	// TODO: Remove?
 	$aHeaders["targetUrl"] = $targetUrl;
 
-
-
 	// Change to async? Not necessary to display the page
 	$db->setRequests($aHeaders);
-
-
 
 	// TODO: Put checks in place if RIOT's API is slow/working
 	if ($response === false) {
 		// eh("something went wrong with curl request");
 	}
-
 	//close cURL
 	curl_close($curl);
 	// $assoc determined whether the array is converted to an object or an assosiative array
@@ -118,7 +113,14 @@ function curl(string $region, $targetUrl, $assoc = false, $additionalParameters 
 				break;
 				// Limit reached
 			case 429:
-				die("Error limit reached" . " retry-after " . $aHeaders["retry-after"] . " seconds");
+				// There is a possiblity when an endpoint goes down to return this error
+				// In this case the headers wont have the retry-after property
+				if (isset($aHeaders["retry-after"])) {
+					die("Error limit reached" . " retry-after " . $aHeaders["retry-after"] . " seconds");
+				}else{
+
+				}
+
 				break;
 
 				// Errors from RIOT servers
@@ -142,6 +144,8 @@ function curl(string $region, $targetUrl, $assoc = false, $additionalParameters 
 				throw new Exception("Unknown error " . $aHeaders["response_code"] . " Code");
 				break;
 		}
+
+		return null;
 	}
 }
 
@@ -273,9 +277,15 @@ function handleResponseCodes(array $aHeaders)
 				break;
 				// Limit reached
 			case 429:
-				die("Error limit reached" . " retry-after " . $aHeaders["retry-after"] . " seconds");
-				break;
+				// There is a possiblity when an endpoint goes down to return this error
+				// In this case the headers wont have the retry-after property
+				if (isset($aHeaders["retry-after"])) {
+					die("Error limit reached" . " retry-after " . $aHeaders["retry-after"] . " seconds");
+				}else{
+					
+				}
 
+				break;
 				// Errors from RIOT servers
 				// Internal server error
 			case 500:
