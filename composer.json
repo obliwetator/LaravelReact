@@ -12,6 +12,7 @@
         "cboden/ratchet": "^0.4.1",
         "fideloper/proxy": "^4.0",
         "laravel/framework": "^6.2",
+        "laravel/helpers": "^1.2",
         "laravel/tinker": "^1.0",
         "symfony/cache": "^5.0"
     },
