@@ -269,4 +269,16 @@ class ApiController extends Controller
         
         return response()->json($staticRunes);
     }
+
+    public function getInit()
+    {
+        $realm = $this->LeagueAPI()->getStaticRealm();
+        $GameVersion = $realm->v;
+        $DDVersion = $realm->dd;
+
+        return response()->json([
+            'GameVersion' => $GameVersion,
+            'DDVersion' => $DDVersion
+        ]);
+    }
 }

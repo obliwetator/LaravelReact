@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,14 +13,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-Route::get('test', function(){
-	return response()->json(array('test1' => 1, 'test2' => 2));
-});
-
 Route::get('/summoner', 'ApiController@summoner');
 Route::post('/getItems', 'ApiController@getItems');
 Route::post('/getIcons', 'ApiController@getIcons');
@@ -32,5 +23,6 @@ Route::post('/getRunes', 'ApiController@getRunes');
 Route::post('/getSummonerLiveGame', 'ApiController@getSummonerLiveGame');
 Route::post('/lookup', 'ApiController@lookup');
 Route::post('/getLeagues', 'ApiController@getLeagues');
+Route::post('/getInit', 'ApiController@GetInit');
 
 Route::post('/getMatchlist', 'ApiController@getMatchlist');
