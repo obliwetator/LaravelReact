@@ -115,7 +115,7 @@ export function TierImage(props: ImageComponents) {
 export function ProvisionalTierImage() {
     return (
         <div className="d-inline-block align-middle">
-            <Image src={"/lolContent/emblems/Emblem_Provisional.png"} height={128} width={128}></Image>
+            <Image src={"/lolContent/emblems/Emblem_PROVISIONAL.png"} height={128} width={128}></Image>
         </div>
     )
 }
