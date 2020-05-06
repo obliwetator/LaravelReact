@@ -3,6 +3,7 @@ import Image from 'react-bootstrap/Image'
 
 import { SummonerHeaderProps, SummonerHeaderState } from "../../ReactInterfaces/RootInterface";
 import { Button, Spinner, Alert } from "react-bootstrap";
+import { ProfileImage } from "../Common/ImageComponents";
 
 export default class SummonerHeader extends React.Component<SummonerHeaderProps, SummonerHeaderState> {
     constructor(props: SummonerHeaderProps) {
@@ -12,12 +13,7 @@ export default class SummonerHeader extends React.Component<SummonerHeaderProps,
     render() {
     return (
         <div className="position-relative">
-            <div className="d-inline-block">
-                <div className="position-relative" >
-                    <Image src={"/lolContent/img2/profileicon/" + this.props.icons.data[this.props.summoner.profileIconId].image.full} alt="Rank icon"></Image>
-                    <span className="position-absolute" id="level"></span>
-                </div>
-            </div>
+            <ProfileImage Id={this.props.icons.data[this.props.summoner.profileIconId].image.full}/>
             <div className="d-inline-block ml-2">
                 <div>
                     <span id="name">{this.props.summoner.name}</span>

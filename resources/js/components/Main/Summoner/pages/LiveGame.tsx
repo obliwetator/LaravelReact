@@ -210,16 +210,16 @@ function TableContent(props: TableContentProps) {
                     </a>
                 </td>
                 <td className="Summoner Spell">
-                    <SummonerSpell />
-                    <SummonerSpell />
+                    {/* <SummonerSpell /> */}
+                    {/* <SummonerSpell /> */}
                 </td>
                 <td className="Runes">
                     <div className="Rune">
                         {/* Zero index is Keystone */}
-                        <Runes/>
+                        {/* <Runes/> */}
                     </div>
                     <div className="Rune">
-                        <Runes/>
+                        {/* <Runes/> */}
                     </div>
                 </td>
                 <td className="Name">

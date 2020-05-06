@@ -11,12 +11,18 @@ import { Summoner as SummonerClass} from "../../../ClassInterfaces/Summoner";
 import { LeagueSummoner } from "../../../ClassInterfaces/LeagueSummoner";
 import { Matchlist } from '../../../ClassInterfaces/Matchlist';
 import { GameByID } from '../../../ClassInterfaces/GameById';
+import { connect, useDispatch, createDispatchHook, ConnectedProps } from 'react-redux';
+import { CombinedState } from 'redux';
+import { TestState } from '../../redux/types/types';
 
-export default class Summoner extends React.Component<SummonerProps, SummonerState> {
+import { addSummoner, updateSummoner, AddVersion } from "../../redux/actions/actions";
+import { Button } from 'react-bootstrap';
+import { match } from 'react-router-dom';
+
+class Summoner extends React.Component<Props, SummonerState> {
   // Prevents a memory leak if we have an async request and dont update the state ( Eg we go forward or backward in the browser)
   _isMounted = false;
-
-  constructor(props: SummonerProps) {
+  constructor(props: Props) {
     super(props);
     this.state = {
       region: this.props.match.params.region,
@@ -32,10 +38,15 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
       IsButtonLoading: false,
       code: null,
       isAlertVisible: false,
+      Version: "10.9.1"
     };
     // We will call this function from <SummonerHeaders /> and bind "this" in order to change the state of this component (Summoner and/or matchlist)
     // All the logic to handling the refresh will be in here
     this.handleRefresh = this.handleRefresh.bind(this)
+  }
+
+  handleClick = () => {
+    this.props.addSummoner(this.state)
   }
 
   componentWillUnmount() {
@@ -44,6 +55,10 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
 
   // When updating the page this should get called to grab the input
   handleSearch = () => {
+    this.props.updateSummoner({
+      error: null,
+      isLoaded: false
+    })
     this.setState({
       error: null,
       isLoaded: false
@@ -76,7 +91,7 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
       region: this.props.match.params.region
     })
   }
-  GetSummmonerSpell = () => {
+  GetSummonerSpell = () => {
     return axios.post('/api/getSummonerSpell', {
       region: this.props.match.params.region
     })
@@ -88,6 +103,11 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
   }
   GetRunes = () => {
     return axios.post('/api/getRunes', {
+      region: this.props.match.params.region
+    })
+  }  
+  GetInit = () => {
+    return axios.post('/api/getInit', {
       region: this.props.match.params.region
     })
   }
@@ -178,11 +198,12 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
       this.GetSummoner(),
       this.GetItems(),
       this.GetIcons(),
-      this.GetSummmonerSpell(),
+      this.GetSummonerSpell(),
       this.GetChampions(),
       this.GetRunes(),
+      this.GetInit(),
     ])
-      .then(axios.spread((Summoner: AxiosResponse<AxiosSummonerResponse>, Items, Icons, SummonerSpells, Champions, Runes) => {
+      .then(axios.spread((Summoner: AxiosResponse<AxiosSummonerResponse>, Items, Icons, SummonerSpells, Champions, Runes, Version) => {
         if (this._isMounted) {
           this.setState({
             [Summoner.data.summoner.name.replace(/\s/g, '').toLowerCase()]: Summoner.data,
@@ -192,6 +213,7 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
             summonerSpells: SummonerSpells.data,
             champions: Champions.data,
             runes: Runes.data,
+            version: Version.data
           })
           axios.all([
             this.GetSummonerLeagueTarget(Summoner.data.summoner)
@@ -219,7 +241,11 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
               WinLoss: WinLoss,
               target: targetSummoner
             }, () => {
-              this.setState({ isLoaded: true})
+              this.setState({ isLoaded: true}, () => {
+                // TEMP DELETE
+                this.props.addSummoner(this.state)
+              })
+
             })
           })).catch((error) => {
             this.setState({
@@ -246,7 +272,7 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
       // If we search for a new summoner or go back/formward in history we will check the state first before calling the server
       let name: string = this.props.match.params.name.replace(/\s/g, '')
 
-      if (name && this.state[name]) {
+      if (name && this.state[name]) { 
         // We update which summoner we are currently viewing. The summoner object with the same name should be in the state
         this.setState({ summonerName: this.props.match.params.name.replace(/\s/g, '') })
         let WinLoss: [number, number] = [0,0]
@@ -358,9 +384,17 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
     }
     else {
       return (
-        <>
+        <>		
+        <Button onClick={this.handleClick}></Button>
           <div className="summoner-header">
-            <SummonerHeader isVisible={this.state.isAlertVisible} code={this.state.code} action={this.handleRefresh} icons={this.state.icons} summoner={this.state[this.state.summonerName].summoner} IsLoading={this.state.IsButtonLoading} />
+            <SummonerHeader 
+              isVisible={this.state.isAlertVisible}
+              code={this.state.code}
+              action={this.handleRefresh}
+              icons={this.state.icons} 
+              summoner={this.state[this.state.summonerName].summoner} 
+              IsLoading={this.state.IsButtonLoading} 
+              Version={this.state.Version}/>
             <div className="Menu">
               <Tabs onSelect={this.handleTab} activeKey={this.state.currentTab} id="uncontrolled-tab-example">
                 <Tab eventKey="summary" title="Summary">
@@ -403,3 +437,24 @@ export default class Summoner extends React.Component<SummonerProps, SummonerSta
     }
   }
 }
+
+const mapDispatchToProps = { addSummoner, updateSummoner, AddVersion }
+
+const connector = connect(mapStateToProps, mapDispatchToProps)
+
+type PropsFromRedux = ConnectedProps<typeof connector>
+
+type Props = PropsFromRedux & {
+  // any extra props
+  match: match<{name:string, region:string}>
+}
+
+function mapStateToProps(state: CombinedState<{
+  summonerReducer: SummonerState;
+  summonerReducer2: TestState;}>) {
+  return {
+    summoneraaaaaaa: state
+  }
+}
+
+export default connector(Summoner)

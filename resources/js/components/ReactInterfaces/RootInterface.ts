@@ -33,6 +33,7 @@ export interface MainState {
 export interface SummonerProps {
     region?: any
     match: match<{name:string, region:string}>
+    [key:string]: any
 }
 
 export interface SummonerState {
@@ -152,6 +153,7 @@ export interface SummonerHeaderProps {
     IsLoading: boolean
     code: number | null
     isVisible: boolean
+    Version: string
 }
 
 export interface SummonerHeaderState {

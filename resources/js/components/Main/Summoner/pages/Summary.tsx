@@ -6,6 +6,7 @@ import * as Chart from 'chart.js';
 import CreateGame from './CreateGame';
 import { SummaryProps, SummaryState, CreateGamesListProps } from '../../../ReactInterfaces/RootInterface';
 import { Ranked } from '../../../../ClassInterfaces/LeagueSummoner';
+import { TierImage, ProvisionalTierImage } from '../../Common/ImageComponents';
 
 export class Summary extends React.Component<SummaryProps, SummaryState> {
     constructor(props: SummaryProps) {
@@ -142,15 +143,13 @@ function RankedSoloGames(props: {tabs: string}) {
     }
 }
 
-function SOLO(props: Ranked) {
+function SOLO(props: Ranked, version:string) {
     // If SOLO rank isset
     if (Object.keys(props).length !== 0) {
         return (
             <>
                 {/* isset summoer target league solo*/}
-                <div className="d-inline-block align-middle">
-                    <Image src={"/lolContent/emblems/Emblem_" + props.tier + ".png"} height={128} width={128}></Image>
-                </div>
+                <TierImage Id={props.tier}/>
                 <div className="d-inline-block align-middle">
                     <div>Ranked Solo</div>
                     <div>{props.tier}  {props.rank}</div>
@@ -169,9 +168,7 @@ function SOLO(props: Ranked) {
     } else {
         return (
             <div>
-                <div className="d-inline-block align-middle">
-                    <Image src={"/lolContent/emblems/Emblem_Provisional.png"} height={128} width={128}></Image>
-                </div>
+                <ProvisionalTierImage />
                 <div className="d-inline-block align-middle">
                     <div>Ranked Solo</div>
                     <div>Uranked</div>
@@ -180,14 +177,12 @@ function SOLO(props: Ranked) {
         )
     }
 }
-function FLEX(props: Ranked) {
+function FLEX(props: Ranked, version:string) {
     // If FLEX rank isset
     if (Object.keys(props).length !== 0) {
         return (
             <div>
-                <div className="d-inline-block align-middle">
-                    <Image src={"/lolContent/emblems/Emblem_" + props.tier + ".png"} height={128} width={128}></Image>
-                </div>
+                <TierImage Id={props.tier}/>
                 <div className="d-inline-block align-middle">
                     <div>Ranked Flex</div>
                     <div>{props.tier}  {props.rank}</div>
@@ -208,9 +203,7 @@ function FLEX(props: Ranked) {
         return (
             <div>
                 {/* If the summoner doesnt have a rank we display an empty border */}
-                <div className="d-inline-block align-middle">
-                    <Image src={"/lolContent/emblems/Emblem_Provisional.png"} height={128} width={128}></Image>
-                </div>
+                <ProvisionalTierImage />
                 <div className="d-inline-block align-middle">
                     <div>Ranked Flex</div>
                     <div>Unranked</div>
