@@ -4,7 +4,7 @@
 
 	// Controls if file decorations should use badges.
 	"explorer.decorations.badges": false,
-
+	"workbench.editor.scrollToSwitchTabs": true,
 	"editor.tokenColorCustomizations": {
 		"[Material Theme Darker High Contrast]": {
 			"textMateRules": [
