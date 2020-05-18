@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Exception;
 use Illuminate\Console\Command;
-use PharData;
+use ZipArchive;
 
 class GetNewDD extends Command
 {
@@ -253,7 +253,7 @@ class GetNewDD extends Command
 
         $this->InitLog(self::base."Updatelog.txt");
 
-        $fileName = "dragontail-" . $lastVersion . ".tgz";
+        $fileName = "dragontail-" . $lastVersion . ".zip";
         $path = self::base . $fileName;
         if (file_exists(self::base . $lastVersion)) {
             $this->LogToText("Version is up to date");
@@ -261,28 +261,24 @@ class GetNewDD extends Command
             // We have the latest version do nothing
         } else {
             // Download the latest version
-            $this->copyfile_chunked("https://ddragon.leagueoflegends.com/cdn/dragontail-$lastVersion.tgz", $path);
+            $this->copyfile_chunked("https://ddragon.leagueoflegends.com/cdn/dragontail-$lastVersion.zip", $path);
             echo "File downloaded. Version: $lastVersion\n";
             $this->LogToText("File downloaded. Version: $lastVersion");
             // unzip
             try {
-                $dest = self::base . "dragontail-$lastVersion.tar";
-                // The .tgz cannot be extracted with PharData since it runs into memory issues
-                // This function extract the xxx.tar which can be extracted with PharData
-                $this->uncompress($path, $dest);
+                $dest = self::base . "$lastVersion";
+
+                $zip = new ZipArchive;
+                if ($zip->open(self::base . "dragontail-$lastVersion.zip") === TRUE) {
+                    $zip->extractTo($dest);
+                    $zip->close();
+                }
+                else {
+                    echo "zip file not found\n";
+                }
                 echo "First decompression sucesfull.\n";
                 $this->LogToText("First decompression sucesfull");
-                // Remove xxx.tgz
-                unlink($path);
-                // Extract xxx.tar
-                $phar = new PharData($dest);
-                $phar->extractTo(self::base . $lastVersion);
-                echo "Second decompression sucesfull.\n";
-                $this->LogToText("Second decompression sucesfull.");
 
-                // Remove xxx.tar
-                unlink($dest);
-                echo "Done\n";
                 $this->LogToText("Done");
             } catch (Exception $e) {
                 dd($e);
