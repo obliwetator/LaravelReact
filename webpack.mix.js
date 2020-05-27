@@ -12,9 +12,6 @@ const mix = require("laravel-mix");
  */
 
 // mix.sass('resources/sass/app.scss', 'public/css');
-
-// mix.react('resources/js/app.js', 'public/js').sourceMaps()
-
 mix
   .ts("resources/js/app.js", "public/js")
   .sourceMaps()
@@ -29,10 +26,12 @@ mix
       ]
     },
     resolve: {
-      extensions: ["*", ".js", ".jsx", ".vue", ".ts", ".tsx"]
+      extensions: ["*", ".js", ".jsx", ".vue", ".ts", ".tsx"],
+      alias: {
+        'react-dom': '@hot-loader/react-dom'
+      }
     }
   });
-// mix.react('resources/js/upload.js', 'public/js').sourceMaps()
 mix
   .ts("resources/js/upload.js", "public/js")
   .sourceMaps()
@@ -50,14 +49,6 @@ mix
       extensions: ["*", ".js", ".jsx", ".vue", ".ts", ".tsx"]
     }
   });
-
-// mix.browserSync({ 
-//   proxy: 'http://127.0.0.1:8000/',
-//   ignore: {
-//     ignoreInitial: true,
-//     ignored: '*.css'
-// },
-// });
 
 if (mix.inProduction()) {
   mix.version();
