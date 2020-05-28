@@ -825,7 +825,6 @@ class dbCall
 		$headers["x-method-rate-limit"] = $methodRateLimit;
 
 		return $headers;
-
 	}
 
 	public function split($request)
@@ -877,7 +876,6 @@ class dbCall
 
 
 		return $headers;
-
 	}
 
 	private function setPlatform($region)

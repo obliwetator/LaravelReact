@@ -16,8 +16,8 @@ const initialState: SummonerState = {
             code: null,
             isAlertVisible: false,
             version: {
-                DDVersion: "",
-                GameVersion: ""
+                LatestVersion: "",
+                LastVersion: ""
             }
     },
 }

@@ -102,7 +102,6 @@ class ApiController extends Controller
 
     public function Summoner(Request $request)
 	{
-
         $summonerName = $request->get("name");
         // Temp Limit on how many games we request
         $limit = 2;
@@ -273,12 +272,9 @@ class ApiController extends Controller
     public function getInit()
     {
         $realm = $this->LeagueAPI()->getStaticRealm();
-        $GameVersion = $realm->v;
-        $DDVersion = $realm->dd;
-
         return response()->json([
-            'GameVersion' => $GameVersion,
-            'DDVersion' => $DDVersion
+            'LatestVersion' => $realm[0],
+            'LastVersion' => $realm[1]
         ]);
     }
 }

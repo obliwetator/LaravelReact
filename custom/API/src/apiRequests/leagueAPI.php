@@ -642,16 +642,15 @@ class LeagueAPI
 	 * @throws RequestException
 	 * @throws ServerException
 	 */
-    public function getStaticRealm(): StaticRealm
+    public function getStaticRealm(): array
     {
 		$result = false;
 		// Fetch StaticData from JSON files
-		$result = DragonData::getStaticRealms($this->settings[self::SET_REGION]);
+		$result = DragonData::getStaticVersion();
 
 		$this->result_data = $result;
 
-		// Parse array and create instances
-		return new StaticRealm($result);
-
+		// return the 2 latest version
+		return array_slice($result, 0, 2);
     }
 }

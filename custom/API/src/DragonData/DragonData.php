@@ -148,9 +148,10 @@ class DragonData
 	{
 		// If we havent mannually overriden the version use DD version (latest)
 		if (is_null($version)) {
-			$version = self::$settings[DragonData::SET_VERSION];
+			// $version = self::$settings[DragonData::SET_VERSION];
 		}
-
+		
+		$version = "10.10.3208608";
 		// The key variable is used ONLY for champions folder which contanains individual champion details.
 		// Otherwise it will always be null
 		// sample url for the champion folder
@@ -266,11 +267,10 @@ class DragonData
 	 * @param StaticRealm $realm
 	 * @param array          $customSettings
 	 */
-	public static function initByRealmObject( StaticRealm $realm)
+	public static function initByRealmObject( array $realm)
 	{	
-		self::$settings[self::SET_ENDPOINT] = $realm->cdn . "/";
-		self::$settings[self::SET_VERSION] = $realm->dd;
-
+		// self::$settings[self::SET_ENDPOINT] = $realm->cdn . "/";
+		self::$settings[self::SET_VERSION] = $realm[0];
 
 		self::$initialized = true;
 	}
@@ -281,22 +281,17 @@ class DragonData
 	 * @return array
 	 * @throws ArgumentException
 	 */
-	public static function getStaticRealms( string $region ) : array
+	public static function getStaticVersion():array
 	{
-		$region = strtolower($region);
-		$url = "https://ddragon.leagueoflegends.com" . "/realms/$region.json";
+		$url = "https://ddragon.leagueoflegends.com" . "/api/versions.json";
 		return self::loadStaticData($url);
 	}
 
-
 	// ICONS
-
 	public static function getSummonerSpellsIcons()
 	{
 		
 	}
-
-
 
 	// Callable functions
 	protected static function _champion( string $url, array $data )

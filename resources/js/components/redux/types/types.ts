@@ -17,7 +17,7 @@ export interface Summoner {
     isAlertVisible?: boolean
     target?: number[]
     WinLoss?: [number, number]
-    version?: {GameVersion:string, DDVersion:string}
+    version?: {LatestVersion:string, LastVersion:string}
 }
 
 export interface SummonerState {

@@ -23,13 +23,13 @@ function curl(string $region, $targetUrl, $assoc = false, $additionalParameters 
 		// query with params
 		foreach ($additionalParameters as $key => $value) {
 			if (isset($value)) {
-				$params = $params . "&$key=" . $value;
+				$params .= "&$key=" . $value;
 			}
 		}
-		$targetUrl = $targetUrl . '?api_key=' . APIKEY . $params;
+		$targetUrl .= '?api_key=' . APIKEY . $params;
 	} else {
 		// Normal query
-		$targetUrl = $targetUrl . '?api_key=' . APIKEY;
+		$targetUrl .= '?api_key=' . APIKEY;
 	}
 	// curl set options
 	curl_setopt_array($curl, [
@@ -156,7 +156,6 @@ function multiCurl (string $region, array $targetUrls, $assoc = false, array $ad
 		dbCall::SET_PLATFORM => $region
 	]);
 
-
 	// array of curl handles
 	$multiCurl = array();
 	// data to be returned
@@ -172,13 +171,13 @@ function multiCurl (string $region, array $targetUrls, $assoc = false, array $ad
 			// query with params
 			foreach ($additionalParameters[$i] as $key => $value) {
 				if (isset($value)) {
-					$params = $params . "&$key=" . $value;
+					$params .= "&$key=" . $value;
 				}
 			}
-			$targetUrls[$i] = $targetUrl . '?api_key=' . APIKEY . $params;
+			$targetUrls[$i] .= '?api_key=' . APIKEY . $params;
 		} else {
 			// Normal query
-			$targetUrls[$i] = $targetUrl . '?api_key=' . APIKEY;
+			$targetUrls[$i] .= '?api_key=' . APIKEY;
 		}
 
 
@@ -214,14 +213,12 @@ function multiCurl (string $region, array $targetUrls, $assoc = false, array $ad
 			$aHeaders[$k][strtolower($key)] = trim($val);
 		}
 
-
 		// add response code since it wasn't added by the above code.
 		// Since the response code is not nicely formated from RIOT we will just add it from $info since we need it anyway
 		$aHeaders[$k]["response_code"] = $info[$k]["http_code"];
 
 		// Add the url for easier debugging
 		$aHeaders[$k]["targetUrl"] = $targetUrl;
-
 
 		// TODO: Put checks in place if RIOT's API is slow/working
 		if ($result[$k] === false) {
