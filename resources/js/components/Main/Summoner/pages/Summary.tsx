@@ -106,7 +106,6 @@ export class Summary extends React.Component<SummaryProps, SummaryState> {
                                     </div>
                                     {/* Each div is a game */}
                                     <div className="GameList">
-                                        <h2>The color intesity is temporary</h2>
                                         <CreateGamesList target={this.props.targets} {...this.props} />
                                     </div>
                                 </div>

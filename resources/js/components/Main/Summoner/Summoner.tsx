@@ -45,10 +45,6 @@ class Summoner extends React.Component<Props, SummonerState> {
     this.handleRefresh = this.handleRefresh.bind(this)
   }
 
-  handleClick = () => {
-    this.props.addSummoner(this.state)
-  }
-
   componentWillUnmount() {
     this._isMounted = false;
   }
@@ -384,8 +380,7 @@ class Summoner extends React.Component<Props, SummonerState> {
     }
     else {
       return (
-        <>		
-        <Button onClick={this.handleClick}></Button>
+        <>
           <div className="summoner-header">
             <SummonerHeader 
               isVisible={this.state.isAlertVisible}

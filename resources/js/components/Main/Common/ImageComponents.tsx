@@ -13,11 +13,12 @@ interface ImageComponents {
 }
 // TODO: Version may not be set since we the images are loaded before the set is set right now.
 // Delete after it's fixed
+/** Uses Redux state */
 function GetVersion(): string {
     const store = useStore<RootStateRedux>()
     const state = store.getState()
     if (state.summonerReducer.summoner.version) {
-        return state.summonerReducer.summoner.version.GameVersion
+        return state.summonerReducer.summoner.version.LastVersion
     }
     return ""
 }
