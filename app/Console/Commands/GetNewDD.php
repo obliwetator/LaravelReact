@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Exception;
 use Illuminate\Console\Command;
+use PharData;
 use ZipArchive;
 
 class GetNewDD extends Command
@@ -245,15 +246,16 @@ class GetNewDD extends Command
     {
         // define('APIKEY', env('API_KEY'));
         /** @var string[] $versions */
-
+        echo "Started\n";
+        // get ALL versions
         $response = $this->curl("https://ddragon.leagueoflegends.com/api/versions.json");
-
+        // get the latest version
         $a = $response[0];
         $lastVersion = str_replace('"', "", $a);
-
-        $this->InitLog(self::base."Updatelog.txt");
+        $this->InitLog(self::base . "Updatelog.txt");
 
         $fileName = "dragontail-" . $lastVersion . ".zip";
+
         $path = self::base . $fileName;
         if (file_exists(self::base . $lastVersion)) {
             $this->LogToText("Version is up to date");
@@ -261,29 +263,66 @@ class GetNewDD extends Command
             // We have the latest version do nothing
         } else {
             // Download the latest version
-            $this->copyfile_chunked("https://ddragon.leagueoflegends.com/cdn/dragontail-$lastVersion.zip", $path);
+            // **** For some reason Riot can't decide on .zip or .tgz so both will be there until I can fidure to dynamically detect it ****
+            // $this->copyfile_chunked("https://ddragon.leagueoflegends.com/cdn/dragontail-$lastVersion.zip", $path);
+            $this->copyfile_chunked("https://ddragon.leagueoflegends.com/cdn/dragontail-$lastVersion.tgz", $path);
             echo "File downloaded. Version: $lastVersion\n";
             $this->LogToText("File downloaded. Version: $lastVersion");
             // unzip
-            try {
-                $dest = self::base . "$lastVersion";
 
-                $zip = new ZipArchive;
-                if ($zip->open(self::base . "dragontail-$lastVersion.zip") === TRUE) {
-                    $zip->extractTo($dest);
-                    $zip->close();
-                }
-                else {
-                    echo "zip file not found\n";
-                }
-                echo "First decompression sucesfull.\n";
-                $this->LogToText("First decompression sucesfull");
+            $this->UnZip($lastVersion);
+            $this->UnTar($lastVersion, $fileName);
+        }
+    }
 
-                $this->LogToText("Done");
-            } catch (Exception $e) {
-                dd($e);
-                $this->LogToText($e);
+    public function UnZip(string $lastVersion)
+    {
+        try {
+            $dest = self::base . $lastVersion;
+
+            $zip = new ZipArchive;
+            if ($zip->open(self::base . "dragontail-$lastVersion.zip") === TRUE) {
+                $zip->extractTo($dest);
+                $zip->close();
+            } else {
+                echo "zip file not found\n";
             }
+            echo "First decompression sucesfull.\n";
+            $this->LogToText("First decompression sucesfull");
+
+            $this->LogToText("Done");
+        } catch (Exception $e) {
+            dd($e);
+            $this->LogToText($e);
+        }
+    }
+
+    public function UnTar(string $lastVersion, string $fileName)
+    {
+        // has .tgz
+        $path = self::base . $fileName;
+        try {
+            $dest = self::base . "dragontail-$lastVersion.tar";
+            // The .tgz cannot be extracted with PharData since it runs into memory issues
+            // This function extract the xxx.tar which can be extracted with PharData
+            $this->uncompress($path, $dest);
+            echo "First decompression sucesfull.\n";
+            $this->LogToText("First decompression sucesfull");
+            // Remove xxx.tgz
+            unlink($path);
+            // Extract xxx.tar
+            $phar = new PharData($dest);
+            $phar->extractTo(self::base . $lastVersion);
+            echo "Second decompression sucesfull.\n";
+            $this->LogToText("Second decompression sucesfull.");
+
+            // Remove xxx.tar
+            unlink($dest);
+            echo "Done\n";
+            $this->LogToText("Done");
+        } catch (Exception $e) {
+            dd($e);
+            $this->LogToText($e);
         }
     }
 
@@ -296,9 +335,9 @@ class GetNewDD extends Command
 
     public function InitLog(string $text)
     {
-        if (!file_exists(self::base."Updatelog.txt")) {
+        if (!file_exists(self::base . "Updatelog.txt")) {
             // Log file does not exists create new
-            $fp = fopen(self::base."Updatelog.txt", 'w');
+            $fp = fopen(self::base . "Updatelog.txt", 'w');
             fwrite($fp, date("Y-m-d H:i:s") . ": " . "File Created\n");
             fclose($fp);
         } else {
