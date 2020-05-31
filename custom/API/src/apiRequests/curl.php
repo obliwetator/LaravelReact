@@ -1,6 +1,6 @@
 <?php
 
-use API\dbCall\dbCall;
+use API\LeagueDB\LeagueDB;
 use PHPUnit\Runner\Exception;
 
 define('APIKEY', env('API_KEY'));
@@ -9,11 +9,11 @@ define('APIKEY', env('API_KEY'));
 const enableCurlLogging = false;
 
 
-// SIngle query
+// Single query
 function curl(string $region, $targetUrl, $assoc = false, $additionalParameters = null)
 {
-	$db = new dbCall([
-		dbCall::SET_PLATFORM => $region
+	$db = new LeagueDB([
+		LeagueDB::SET_PLATFORM => $region
 		]);
 	$curl = curl_init();
 
@@ -152,8 +152,8 @@ function curl(string $region, $targetUrl, $assoc = false, $additionalParameters 
 // Executes queries in parallel. Used for getting games by id
 function multiCurl (string $region, array $targetUrls, $assoc = false, array $additionalParameters = null)
 {
-	$db = new dbCall([
-		dbCall::SET_PLATFORM => $region
+	$db = new LeagueDB([
+		LeagueDB::SET_PLATFORM => $region
 	]);
 
 	// array of curl handles
@@ -304,5 +304,59 @@ function handleResponseCodes(array $aHeaders)
 				throw new Exception("Unknown error " . $aHeaders["response_code"] . " Code");
 				break;
 		}
+	}
+}
+
+function curlStatic(string $targetUrl) {
+	$curl = curl_init();
+
+	// curl set options
+	curl_setopt_array($curl, [
+		// 1(true) returns the body, 0(false) returns bool value
+		CURLOPT_RETURNTRANSFER => 1,
+		CURLOPT_URL => $targetUrl,
+		// retrive headers
+		CURLOPT_HEADER => 1,
+		CURLOPT_VERBOSE => enableCurlLogging,
+	]);
+	//execute
+	$response = curl_exec($curl);
+	// curl connection info
+	$info = curl_getinfo($curl);
+	// Get header size from $info
+	$curlHeaderSize = $info['header_size'];
+
+	// Found on github https://gist.github.com/neopunisher/5292506. Converts string text to array
+	$sBody = trim(mb_substr($response, $curlHeaderSize));
+	$ResponseHeader = explode("\n", trim(mb_substr($response, 0, $curlHeaderSize)));
+
+	// This removes the first entry. The response code
+	unset($ResponseHeader[0]);
+	$aHeaders = array();
+	foreach ($ResponseHeader as $line) {
+		list($key, $val) = explode(':', $line, 2);
+		$aHeaders[strtolower($key)] = trim($val);
+	}
+
+	// add response code since it wasn't added by the above code.
+	// Since the response code is not nicely formated from RIOT we will just add it from $info since we need it anyway
+	$aHeaders["response_code"] = $info["http_code"];
+	// Add the url for easier debugging
+	// TODO: Remove?
+	$aHeaders["targetUrl"] = $targetUrl;
+
+	// TODO: Put checks in place if RIOT's API is slow/working
+	if ($response === false) {
+		// eh("something went wrong with curl request");
+	}
+	//close cURL
+	curl_close($curl);
+	// $assoc determined whether the array is converted to an object or an assosiative array
+	// $data = json_decode($sBody, true);
+
+	// check for response code and proceed accordingly
+
+	if ($aHeaders["response_code"] == 200) {
+		return $sBody	;
 	}
 }

@@ -11,6 +11,7 @@ class GetNewDD extends Command
 {
     const enableCurlLogging = false;
     const base = "public/lolContent/";
+    // TODO: Make locale dynamic to iterate over them.
     /**
      * The name and signature of the console command.
      *
@@ -30,6 +31,9 @@ class GetNewDD extends Command
      *
      * @return void
      */
+
+    private string $lastVersion;
+
     public function __construct()
     {
         parent::__construct();
@@ -244,34 +248,39 @@ class GetNewDD extends Command
      */
     public function handle()
     {
-        // define('APIKEY', env('API_KEY'));
         /** @var string[] $versions */
-        echo "Started\n";
+        $this->LogToText("Started");
         // get ALL versions
         $response = $this->curl("https://ddragon.leagueoflegends.com/api/versions.json");
         // get the latest version
         $a = $response[0];
-        $lastVersion = str_replace('"', "", $a);
+        $this->lastVersion = str_replace('"', "", $a);
+
         $this->InitLog(self::base . "Updatelog.txt");
 
-        $fileName = "dragontail-" . $lastVersion . ".zip";
+        $fileName = "dragontail-" . $this->lastVersion . ".zip";
+
+        // $fp = fopen('public/version.json', 'w');
+        // $json = json_encode(['version' => "$lastVersion"]);
+        // fwrite($fp, $json);
+        // fclose($fp);
 
         $path = self::base . $fileName;
-        if (file_exists(self::base . $lastVersion)) {
+        if (file_exists(self::base . $this->lastVersion)) {
             $this->LogToText("Version is up to date");
-            echo "Version is up to date";
             // We have the latest version do nothing
         } else {
             // Download the latest version
             // **** For some reason Riot can't decide on .zip or .tgz so both will be there until I can fidure to dynamically detect it ****
             // $this->copyfile_chunked("https://ddragon.leagueoflegends.com/cdn/dragontail-$lastVersion.zip", $path);
-            $this->copyfile_chunked("https://ddragon.leagueoflegends.com/cdn/dragontail-$lastVersion.tgz", $path);
-            echo "File downloaded. Version: $lastVersion\n";
-            $this->LogToText("File downloaded. Version: $lastVersion");
+            $this->copyfile_chunked("https://ddragon.leagueoflegends.com/cdn/dragontail-$this->lastVersion.tgz", $path);
+            $this->LogToText("File downloaded. Version: $this->lastVersion");
             // unzip
 
-            $this->UnZip($lastVersion);
-            $this->UnTar($lastVersion, $fileName);
+            $this->UnZip($this->lastVersion);
+            $this->UnTar($this->lastVersion, $fileName);
+
+            $this->ConvertJsons();
         }
     }
 
@@ -284,15 +293,13 @@ class GetNewDD extends Command
             if ($zip->open(self::base . "dragontail-$lastVersion.zip") === TRUE) {
                 $zip->extractTo($dest);
                 $zip->close();
-            } else {
-                echo "zip file not found\n";
-            }
-            echo "First decompression sucesfull.\n";
-            $this->LogToText("First decompression sucesfull");
 
-            $this->LogToText("Done");
+                $this->LogToText("Done");
+            } else {
+                $this->LogToText("Zip file not found");
+            }
         } catch (Exception $e) {
-            dd($e);
+            dump($e);
             $this->LogToText($e);
         }
     }
@@ -306,22 +313,19 @@ class GetNewDD extends Command
             // The .tgz cannot be extracted with PharData since it runs into memory issues
             // This function extract the xxx.tar which can be extracted with PharData
             $this->uncompress($path, $dest);
-            echo "First decompression sucesfull.\n";
             $this->LogToText("First decompression sucesfull");
             // Remove xxx.tgz
             unlink($path);
             // Extract xxx.tar
             $phar = new PharData($dest);
             $phar->extractTo(self::base . $lastVersion);
-            echo "Second decompression sucesfull.\n";
             $this->LogToText("Second decompression sucesfull.");
 
             // Remove xxx.tar
             unlink($dest);
-            echo "Done\n";
             $this->LogToText("Done");
         } catch (Exception $e) {
-            dd($e);
+            dump($e);
             $this->LogToText($e);
         }
     }
@@ -331,6 +335,8 @@ class GetNewDD extends Command
         $fp = fopen(self::base . "Updatelog.txt", 'a');
         fwrite($fp, date("Y-m-d H:i:s") . ": " . "$TextLog\n");
         fclose($fp);
+
+        echo $TextLog . "\n";
     }
 
     public function InitLog(string $text)
@@ -355,5 +361,79 @@ class GetNewDD extends Command
         }
         gzclose($sfp);
         fclose($fp);
+    }
+
+    public function ConvertJsons()
+    {
+        $this->ConvertChampions();
+        $this->ConvertRunes();
+        $this->ConvertSummonerSpells();
+    }
+
+    private function ConvertChampions()
+    {
+        /** @var array $data */
+        $data = file_get_contents("public/lolContent/$this->lastVersion/$this->lastVersion/data/en_GB/" . "champion.json");
+        $data = json_decode($data, true);
+        // Convert names => IDs
+		$data_by_key = $data;
+		$data_by_key['data'] = [];
+
+		array_walk($data['data'], function( $d ) use (&$data_by_key) {
+			$data_by_key['data'][(int)$d['key']] = $d;
+		});
+        
+        // Add an array with IDs => names
+		$data_by_key['keys'] = array_map(function ($d) {
+			return $d['id'];
+		}, $data_by_key['data']);
+		$data_by_key['keys'] = array_flip($data_by_key['keys']);
+
+        file_put_contents("public/lolContent/$this->lastVersion/$this->lastVersion/data/en_GB/" . "championByKey.json", json_encode($data_by_key));
+
+        $this->LogToText("Converted Champions");
+    }
+
+    private function ConvertSummonerSpells()
+    {
+        /** @var array $data */
+        $data = file_get_contents("public/lolContent/$this->lastVersion/$this->lastVersion/data/en_GB/" . "summoner.json");
+        $data = json_decode($data, true);
+
+		$data_by_key = $data;
+		$data_by_key['data'] = [];
+
+		array_walk($data['data'], function( $d ) use (&$data_by_key) {
+			$data_by_key['data'][(int)$d['key']] = $d;
+		});
+
+        file_put_contents("public/lolContent/$this->lastVersion/$this->lastVersion/data/en_GB/" . "summonerByKey.json", json_encode($data_by_key));
+
+        $this->LogToText("Converted Spells");
+    }
+    private function ConvertRunes()
+    {
+        /** @var array $data */
+        $data = file_get_contents("public/lolContent/$this->lastVersion/$this->lastVersion/data/en_GB/" . "runesReforged.json");
+        $data = json_decode($data, true);
+
+        $r = [];
+		foreach ($data as $path) {
+			$r[$path['id']] = [
+				'key' => $path['key'], 
+				'icon' => $path['icon'], 
+				'name' => $path['name'] 
+				];
+
+			foreach ($path['slots'] as $slot) {
+				foreach ($slot['runes'] as $item) {
+					$r[$item['id']] = $item;
+				}
+			}
+        }
+        
+        file_put_contents("public/lolContent/$this->lastVersion/$this->lastVersion/data/en_GB/" . "runesReforgedByKey.json", json_encode($r));
+
+        $this->LogToText("Converted Runes");
     }
 }

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use API\LeagueAPI\LeagueAPI;
-use API\dbCall\dbCall;
+use API\LeagueDB\LeagueDB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 

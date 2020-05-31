@@ -1,6 +1,6 @@
 <?php
 
-namespace API\dbCall;
+namespace API\LeagueDB;
 
 use API\LeagueAPI\Definitions\IPlatform;
 use API\LeagueAPI\Definitions\IRegion;
@@ -14,7 +14,7 @@ require_once("dbConnect.php");
 
 
 
-class dbCall
+class LeagueDB
 {
 	/** @var \mysqli $conn */
 	public $conn;
@@ -538,14 +538,14 @@ class dbCall
 		}
 		$this->makeDbCallSet($insertQuery);
 	}
-	/** @param \API\LeagueAPI\Objects\LeagueSummoner[][][] $summonersLeagues */
+	/** @param \API\LeagueAPI\Objects\LeagueSummoner[][] $summonersLeagues */
 	public function setLeagueBySummoner($summonersLeagues, $entriesToFind = null)
 	{
 		$insertQuery = "INSERT IGNORE INTO `leaguebysummoner_$this->region` (`summonerId`, `summonerName`, `queueType`, `tier`, `rank`, `leagueId`, `leaguePoints`, `wins`, `losses`, `veteran`, `inactive`, `freshBlood`, `hotStreak`, `isNull`) VALUES ";
 		// If a single value is passed
 
 		foreach ($summonersLeagues as $key => $participant) {
-			if ($participant == null) {
+			if ($participant === null) {
 				$entry = $entriesToFind[$key];
 				if (array_key_last($summonersLeagues) == $key) {
 					$insertQuery .= "('$entry', null, 'Unranked', null, null, null, null, null, null, null, null, null, null, 1);";

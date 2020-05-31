@@ -96,7 +96,6 @@ class DragonData
 	{
 		$data = self::loadCachedStaticData($url);
 		// Cached Data exists
-
 		if ($data->isHit()) {
 			return $data->get();
 		}
@@ -107,8 +106,10 @@ class DragonData
 			$fragmentlessUrl = substr($url, 0, $fragmentPos);
 		}
 
+
 		// Try to load from the web
-		$data = @file_get_contents($url);
+		$data = curlStatic($url);
+		//$data = @file_get_contents($url);
 		if (!$data)
 		{
 			throw new Exception("Failed to get static data: $url .");
@@ -116,7 +117,9 @@ class DragonData
 
 		// Data from web comes as json
 		$data = json_decode($data, true);
+
 		self::saveStaticData($fragmentlessUrl, $data);
+
 
 		if ($postprocess)
 		{
@@ -127,20 +130,11 @@ class DragonData
 		return $data;
 	}
 
-	public static function getCacheObject()
-	{
-		$cache = new FilesystemAdapter(
-			"",
-			0,
-			self::CACHE_DIR
-		);
-	}
 	/** @return \Symfony\Component\Cache\CacheItem */
 	public static function loadCachedStaticData($url)
 	{
 		$urlHash = md5($url);
 		$cache = self::getCacheInterface();
-
 		return $cache->getItem($urlHash);
 	}
 	/** We crate the url in case we need to download the data if ours is outdated. <- TODO: */
@@ -148,10 +142,9 @@ class DragonData
 	{
 		// If we havent mannually overriden the version use DD version (latest)
 		if (is_null($version)) {
-			// $version = self::$settings[DragonData::SET_VERSION];
+			$version = self::$settings[DragonData::SET_VERSION];
 		}
 		
-		$version = "10.10.3208608";
 		// The key variable is used ONLY for champions folder which contanains individual champion details.
 		// Otherwise it will always be null
 		// sample url for the champion folder
@@ -162,7 +155,6 @@ class DragonData
 		if (is_null($version)) {
 			throw new Exception("No version for DD");
 		}
-
 
 		return $url;
 	}
@@ -257,7 +249,7 @@ class DragonData
 	 * @throws LeagueExceptions\ServerException
 	 */
 	public static function initByApi( LeagueAPI $api)
-	{
+	{	
 		self::initByRealmObject($api->getStaticRealm());
 	}
 

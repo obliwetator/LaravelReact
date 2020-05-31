@@ -57,6 +57,7 @@ class LeagueAPI
 	/** @var string $platforms */
 	public $region;
 	
+	public array $result_data;
 
 	// $assoc determined whether the array is converted to an object(false) or an assosiative array(true)
 	private $assoc = true;
@@ -89,16 +90,16 @@ class LeagueAPI
 
 			// a string used as the subdirectory of the root cache directory, where cache
 			// items will be stored
-			$namespace = 'DragonDataCache',
+			'DragonDataCache',
 		
 			// the default lifetime (in seconds) for cache items that do not define their
 			// own lifetime, with a value 0 causing items to be stored indefinitely (i.e.
 			// until the files are deleted)
-			$defaultLifetime = 0,
+			0,
 		
 			// the main cache directory (the application needs read-write permissions on it)
 			// if none is specified, a directory is created inside the system temporary directory
-			$directory = self::CACHE_DIR
+			self::CACHE_DIR
 		);
 
 		return $cache;
@@ -632,25 +633,19 @@ class LeagueAPI
 		return $this;
 	}
 
-		/**
+	/**
 	 *   Retrieve realm data. (Region versions)
 	 *
-	 * @cli-name get-realm
-	 * @cli-namespace static-data
 	 *
-	 * @return StaticRealm
-	 * @throws RequestException
-	 * @throws ServerException
+	 * @return array
 	 */
     public function getStaticRealm(): array
     {
 		$result = false;
 		// Fetch StaticData from JSON files
 		$result = DragonData::getStaticVersion();
-
 		$this->result_data = $result;
-
 		// return the 2 latest version
-		return array_slice($result, 0, 2);
+		return $result;
     }
 }
