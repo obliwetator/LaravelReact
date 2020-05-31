@@ -39,7 +39,7 @@
 			"App\\": "app/",
 			"API\\LeagueAPI\\": "custom/API/src/apiRequests",
 			"API\\DragonData\\": "custom/API/src/DragonData",
-            "API\\dbCall\\": "custom/API/src/DB",
+            "API\\LeagueDB\\": "custom/API/src/DB",
             "MyApp\\": "custom/Ratchet"
         },
         "classmap": [

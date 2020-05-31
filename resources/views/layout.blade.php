@@ -43,7 +43,7 @@
 	<div id="root"></div>
 </body>
 	{{-- Complied with laravel mix. Takes all dependencies and combines them all into 1 big js file --}}
-	<script src={{ mix('/js/app.js') }}></script>
+	<script src={{ mix('js/app.js') }}></script>
 
 	{{-- Custom js the will be used across all pages --}}
 	{{-- <script src="{{ asset('js/custom/js.js')}}"></script> --}}
