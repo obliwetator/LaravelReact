@@ -11,13 +11,14 @@ import { Summoner as SummonerClass} from "../../../ClassInterfaces/Summoner";
 import { LeagueSummoner } from "../../../ClassInterfaces/LeagueSummoner";
 import { Matchlist } from '../../../ClassInterfaces/Matchlist';
 import { GameByID } from '../../../ClassInterfaces/GameById';
-import { connect, useDispatch, createDispatchHook, ConnectedProps } from 'react-redux';
+import { connect, useDispatch, createDispatchHook, ConnectedProps, useStore } from 'react-redux';
 import { CombinedState } from 'redux';
-import { TestState } from '../../redux/types/types';
+import { TestState, SummonerType } from '../../redux/types/types';
 
 import { addSummoner, updateSummoner, AddVersion } from "../../redux/actions/actions";
 import { Button } from 'react-bootstrap';
 import { match } from 'react-router-dom';
+import { RootStateRedux } from '../../redux';
 
 class Summoner extends React.Component<Props, SummonerState> {
   // Prevents a memory leak if we have an async request and dont update the state ( Eg we go forward or backward in the browser)
@@ -78,6 +79,8 @@ class Summoner extends React.Component<Props, SummonerState> {
     })
   }
   GetItems = () => {
+    // const version = this.props.summonerReducer.version?.LatestVersion;
+    // return axios.get(`/lolContent/${version}/${version}/data/en_GB/item.json`)
     return axios.post('/api/getItems', {
       region: this.props.match.params.region
     })
@@ -125,7 +128,6 @@ class Summoner extends React.Component<Props, SummonerState> {
       lastMatch: this.state[this.state.summonerName].matchlist[0].gameId,
       summonerRevision: this.state[this.state.summonerName].summoner.lastUpdate,
       matchlistRevision: this.state[this.state.summonerName].summoner.lastUpdateMatchlist
-
     }).then((response: AxiosResponse<AxiosMatchlistResponse>) => {
       // If not data is present it will return some code
       if (response.data.code !== undefined) {
@@ -181,6 +183,18 @@ class Summoner extends React.Component<Props, SummonerState> {
           IsButtonLoading: false
         })
       }
+    }).catch((error) => {
+      this.setState({
+        code: null,
+        IsButtonLoading: false,
+        isAlertVisible: true
+      }, () => {
+        setTimeout(() => {
+          this.setState({
+            isAlertVisible: false
+          })
+        }, 3500);
+      })
     })
     // TODO: Implement client side validation, use enums
     if (TimeNow - TimeSummoner < TIME_FOR_SUMMONER) {
@@ -445,10 +459,10 @@ type Props = PropsFromRedux & {
 }
 
 function mapStateToProps(state: CombinedState<{
-  summonerReducer: SummonerState;
+  summonerReducer: SummonerType;
   summonerReducer2: TestState;}>) {
   return {
-    summoneraaaaaaa: state
+    ...state
   }
 }
 

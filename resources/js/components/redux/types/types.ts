@@ -1,6 +1,6 @@
 import { RunesReforged } from "../../../ClassInterfaces/RunesReforged";
 
-export interface Summoner {
+export interface SummonerType {
     [k:string]: any
     region?: any
     error?: String | null
@@ -21,7 +21,7 @@ export interface Summoner {
 }
 
 export interface SummonerState {
-    summoner: Summoner
+    summoner: SummonerType
 }
 
 export interface TestState {
@@ -40,12 +40,12 @@ export const ADD_VERSION = 'ADD_VERSIOn'
 
 interface AddSummoner {
     type: typeof ADD_SUMMONER,
-    payload: Summoner
+    payload: SummonerType
 }
 
 interface UpdateSummoner {
     type: typeof UPDATE_SUMMONER,
-    payload: Summoner
+    payload: SummonerType
 }
 
 interface AddVersion {

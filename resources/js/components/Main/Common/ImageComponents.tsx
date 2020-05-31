@@ -18,7 +18,7 @@ function GetVersion(): string {
     const store = useStore<RootStateRedux>()
     const state = store.getState()
     if (state.summonerReducer.summoner.version) {
-        return state.summonerReducer.summoner.version.LastVersion
+        return state.summonerReducer.summoner.version.LatestVersion
     }
     return ""
 }
