@@ -17,25 +17,21 @@ export interface SummonerType {
     isAlertVisible?: boolean
     target?: number[]
     WinLoss?: [number, number]
-    version?: {LatestVersion:string, LastVersion:string}
+    version?: VersionState
 }
 
 export interface SummonerState {
     summoner: SummonerType
 }
 
-export interface TestState {
-    test: string
-}
-
 export interface VersionState {
-    GameVersion: string
-    DDVersion: string
+    LastVersion: string
+    LatestVersion: string
 }
 
 export const ADD_SUMMONER = 'ADD_SUMMONER'
 export const UPDATE_SUMMONER = 'UPDATE_SUMMONER'
-export const ADD_VERSION = 'ADD_VERSIOn'
+export const ADD_VERSION = 'ADD_VERSION'
 
 
 interface AddSummoner {
@@ -52,5 +48,4 @@ interface AddVersion {
     type: typeof ADD_VERSION
     payload: VersionState
 }
-export type SummonerActionTypes = AddSummoner | UpdateSummoner
-export type VersionTypes = AddVersion
+export type SummonerActionTypes = AddSummoner | UpdateSummoner |  AddVersion

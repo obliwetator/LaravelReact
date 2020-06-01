@@ -1,4 +1,4 @@
-import { SummonerState, ADD_SUMMONER, SummonerActionTypes, TestState, UPDATE_SUMMONER } from "../types/types";
+import { SummonerState, ADD_SUMMONER, SummonerActionTypes, UPDATE_SUMMONER, ADD_VERSION } from "../types/types";
 
 const initialState: SummonerState = {
     summoner : {
@@ -32,7 +32,10 @@ export function summonerReducer(
         case ADD_SUMMONER:
             return {
                 // We have a blank initial state, add a new summoner
-                summoner: action.payload
+                summoner: {
+                    ...state.summoner,
+                    ...action.payload,
+                }
             }
         case UPDATE_SUMMONER:
             return {
@@ -43,7 +46,14 @@ export function summonerReducer(
                     ...action.payload,
                 }
             }
+        case ADD_VERSION:
+            return {
+                summoner: {
+                    version: action.payload
+                }
+            }
         default:
+            console.log('No reducer defined')
             return state
     }
 }

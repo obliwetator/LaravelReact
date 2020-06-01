@@ -1,4 +1,4 @@
-import { SummonerType ,ADD_SUMMONER, SummonerActionTypes, UPDATE_SUMMONER, VersionState, VersionTypes, ADD_VERSION } from "../types/types";
+import { SummonerType ,ADD_SUMMONER, SummonerActionTypes, UPDATE_SUMMONER, VersionState, ADD_VERSION } from "../types/types";
 
 export function addSummoner(newSummoner: SummonerType): SummonerActionTypes {
     return {
@@ -14,7 +14,7 @@ export function updateSummoner(updatedSummoner: SummonerType): SummonerActionTyp
     }
 }
 
-export function AddVersion(NewVersion: VersionState): VersionTypes {
+export function AddVersion(NewVersion: VersionState): SummonerActionTypes {
     return {
         type: ADD_VERSION,
         payload: NewVersion
