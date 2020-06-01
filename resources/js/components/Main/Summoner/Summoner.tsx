@@ -13,7 +13,7 @@ import { Matchlist } from '../../../ClassInterfaces/Matchlist';
 import { GameByID } from '../../../ClassInterfaces/GameById';
 import { connect, useDispatch, createDispatchHook, ConnectedProps, useStore } from 'react-redux';
 import { CombinedState } from 'redux';
-import { TestState, SummonerType } from '../../redux/types/types';
+import { SummonerType, VersionState } from '../../redux/types/types';
 
 import { addSummoner, updateSummoner, AddVersion } from "../../redux/actions/actions";
 import { Button } from 'react-bootstrap';
@@ -38,8 +38,7 @@ class Summoner extends React.Component<Props, SummonerState> {
       currentTab: "summary",
       IsButtonLoading: false,
       code: null,
-      isAlertVisible: false,
-      Version: "10.9.1"
+      isAlertVisible: false
     };
     // We will call this function from <SummonerHeaders /> and bind "this" in order to change the state of this component (Summoner and/or matchlist)
     // All the logic to handling the refresh will be in here
@@ -79,36 +78,28 @@ class Summoner extends React.Component<Props, SummonerState> {
     })
   }
   GetItems = () => {
-    // const version = this.props.summonerReducer.version?.LatestVersion;
     // return axios.get(`/lolContent/${version}/${version}/data/en_GB/item.json`)
-    return axios.post('/api/getItems', {
-      region: this.props.match.params.region
-    })
+    const version = this.props.summonerReducer.summoner.version?.LatestVersion;
+    return axios.get(`https://static.patrykstyla.com/${version}/${version}/data/en_GB/item.json`)
   }
   GetIcons = () => {
-    return axios.post('/api/getIcons', {
-      region: this.props.match.params.region
-    })
+    const version = this.props.summonerReducer.summoner.version?.LatestVersion;
+    return axios.get(`https://static.patrykstyla.com/${version}/${version}/data/en_GB/profileicon.json`)
   }
   GetSummonerSpell = () => {
-    return axios.post('/api/getSummonerSpell', {
-      region: this.props.match.params.region
-    })
+    const version = this.props.summonerReducer.summoner.version?.LatestVersion;
+    return axios.get(`https://static.patrykstyla.com/${version}/${version}/data/en_GB/summonerByKey.json`)
   }
   GetChampions = () => {
-    return axios.post('/api/getChampions', {
-      region: this.props.match.params.region
-    })
+    const version = this.props.summonerReducer.summoner.version?.LatestVersion;
+    return axios.get(`https://static.patrykstyla.com/${version}/${version}/data/en_GB/championByKey.json`)
   }
   GetRunes = () => {
-    return axios.post('/api/getRunes', {
-      region: this.props.match.params.region
-    })
+    const version = this.props.summonerReducer.summoner.version?.LatestVersion;
+    return axios.get(`https://static.patrykstyla.com/${version}/${version}/data/en_GB/runesReforgedByKey.json`)
   }  
   GetInit = () => {
-    return axios.post('/api/getInit', {
-      region: this.props.match.params.region
-    })
+    return axios.post('/api/getInit')
   }
 
   handleRefresh(e: React.MouseEvent<HTMLButtonElement>) {
@@ -204,74 +195,83 @@ class Summoner extends React.Component<Props, SummonerState> {
 }
   componentDidMount() {
     this._isMounted = true;
-    axios.all([
-      this.GetSummoner(),
-      this.GetItems(),
-      this.GetIcons(),
-      this.GetSummonerSpell(),
-      this.GetChampions(),
-      this.GetRunes(),
-      this.GetInit(),
-    ])
-      .then(axios.spread((Summoner: AxiosResponse<AxiosSummonerResponse>, Items, Icons, SummonerSpells, Champions, Runes, Version) => {
+    
+    axios.post('/api/getInit')
+      .then((Version: AxiosResponse<VersionState>) => {
         if (this._isMounted) {
-          this.setState({
-            [Summoner.data.summoner.name.replace(/\s/g, '').toLowerCase()]: Summoner.data,
-            summonerName: Summoner.data.summoner.name.replace(/\s/g, '').toLowerCase(),
-            items: Items.data,
-            icons: Icons.data,
-            summonerSpells: SummonerSpells.data,
-            champions: Champions.data,
-            runes: Runes.data,
-            version: Version.data
-          })
-          axios.all([
-            this.GetSummonerLeagueTarget(Summoner.data.summoner)
-          ]).then(axios.spread((SummonerLeagueTarget) =>{
-            let property = "summonerLeagueTarget" + Summoner.data.summoner.name.replace(/\s/g, '').toLowerCase()
-            let WinLoss: [number, number] = [0,0]
-            let targetSummoner: number[] = []
-            Summoner.data.gamesById!.forEach((match, i) => {
-              match.participantIdentities.forEach((participantIdentities, j) => {
-                  if (participantIdentities.player.summonerId == Summoner.data.summoner.id) {
-                      targetSummoner.push(j)
-                      if (match.participants[j].teamId === 100) {
-                          // Left Team
-                          match.teams[0].win == "Win" ? WinLoss[0] += 1: WinLoss[1] += 1
-                      }
-                      else {
-                          // Right Team
-                          match.teams[1].win == "Win" ? WinLoss[0] += 1: WinLoss[1] += 1
-                      }
-                  }
-              })
-          })
-            this.setState({
-              [property]: SummonerLeagueTarget.data,
-              WinLoss: WinLoss,
-              target: targetSummoner
-            }, () => {
-              this.setState({ isLoaded: true}, () => {
-                // TEMP DELETE
-                this.props.addSummoner(this.state)
+            this.props.AddVersion(Version.data)
+
+            axios.all([
+              this.GetSummoner(),
+              this.GetItems(),
+              this.GetIcons(),
+              this.GetSummonerSpell(),
+              this.GetChampions(),
+              this.GetRunes(),
+            ])
+              .then(axios.spread((Summoner: AxiosResponse<AxiosSummonerResponse>, Items, Icons, SummonerSpells, Champions, Runes) => {
+                if (this._isMounted) {
+                  this.setState({
+                    [Summoner.data.summoner.name.replace(/\s/g, '').toLowerCase()]: Summoner.data,
+                    summonerName: Summoner.data.summoner.name.replace(/\s/g, '').toLowerCase(),
+                    items: Items.data,
+                    icons: Icons.data,
+                    summonerSpells: SummonerSpells.data,
+                    champions: Champions.data,
+                    runes: Runes.data,
+                  })
+                  axios.all([
+                    this.GetSummonerLeagueTarget(Summoner.data.summoner)
+                  ]).then(axios.spread((SummonerLeagueTarget) =>{
+                    let property = "summonerLeagueTarget" + Summoner.data.summoner.name.replace(/\s/g, '').toLowerCase()
+                    let WinLoss: [number, number] = [0,0]
+                    let targetSummoner: number[] = []
+                    Summoner.data.gamesById!.forEach((match, i) => {
+                      match.participantIdentities.forEach((participantIdentities, j) => {
+                          if (participantIdentities.player.summonerId == Summoner.data.summoner.id) {
+                              targetSummoner.push(j)
+                              if (match.participants[j].teamId === 100) {
+                                  // Left Team
+                                  match.teams[0].win == "Win" ? WinLoss[0] += 1: WinLoss[1] += 1
+                              }
+                              else {
+                                  // Right Team
+                                  match.teams[1].win == "Win" ? WinLoss[0] += 1: WinLoss[1] += 1
+                              }
+                          }
+                      })
+                  })
+                    this.setState({
+                      [property]: SummonerLeagueTarget.data,
+                      WinLoss: WinLoss,
+                      target: targetSummoner
+                    }, () => {
+                      this.setState({ isLoaded: true}, () => {
+                        // TEMP DELETE
+                        this.props.addSummoner(this.state)
+                      })
+        
+                    })
+                  })).catch((error) => {
+                    this.setState({
+                      error: error
+                    })
+                  })
+                  
+                  document.title = Summoner.data.summoner.name
+                }
+              }))
+              .catch((error) => {
+                this.setState({
+                  error: error
+                })
+                document.title = "summoner not found"
               })
 
-            })
-          })).catch((error) => {
-            this.setState({
-              error: error
-            })
-          })
-          
-          document.title = Summoner.data.summoner.name
         }
-      }))
-      .catch((error) => {
-        this.setState({
-          error: error
-        })
-        document.title = "summoner not found"
       })
+
+
   }
   componentDidUpdate(prevProps: SummonerProps) {
     let prevSearch = prevProps.match.params.name;
@@ -459,8 +459,7 @@ type Props = PropsFromRedux & {
 }
 
 function mapStateToProps(state: CombinedState<{
-  summonerReducer: SummonerType;
-  summonerReducer2: TestState;}>) {
+  summonerReducer: SummonerType;}>) {
   return {
     ...state
   }

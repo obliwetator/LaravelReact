@@ -38,7 +38,7 @@ export function SummonerSpell(props: ImageComponents) {
                     </Tooltip>
                 }
             >   
-                <Image height={32} width={32} src={`/lolContent/${version}/${version}/img/spell/` + props.Id + ".png"} />
+                <Image height={32} width={32} src={`https://static.patrykstyla.com/${version}/${version}/img/spell/` + props.Id + ".png"} />
             </OverlayTrigger>
 
         </div>
@@ -60,7 +60,7 @@ export function Runes(props: ImageComponents) {
                 }
             >
                 {/* Already has the path suffix */}
-                <Image height={32} width={32} src={`/lolContent/${version}/img/` + props.Id} />
+                <Image height={32} width={32} src={`https://static.patrykstyla.com/${version}/img/` + props.Id} />
             </OverlayTrigger>
 
 
@@ -84,7 +84,7 @@ export function Item(props: ImageComponents) {
                         </Tooltip>
                     }
                 >
-                    <Image height={22} width={22} src={`/lolContent/${version}/${version}/img/item/` + props.Id + ".png"} />
+                    <Image height={22} width={22} src={`https://static.patrykstyla.com/${version}/${version}/img/item/` + props.Id + ".png"} />
                 </OverlayTrigger>
                 :
                 <Image height={22} width={22} className="noImage" />
@@ -99,7 +99,7 @@ export function ChampionImage(props: any) {
     return (
         <div className="ChampionImage d-inline-block" style={{ verticalAlign: 'middle' }}>
             <a href={"/champions/" + props.Id + "/statistics"} target="_blank">
-                <Image height={64} width={64} src={`/lolContent/${version}/${version}/img/champion/` + props.Id + ".png"} />
+                <Image height={64} width={64} src={`https://static.patrykstyla.com/${version}/${version}/img/champion/` + props.Id + ".png"} />
             </a>
         </div>
     )
@@ -108,7 +108,7 @@ export function ChampionImage(props: any) {
 export function TierImage(props: ImageComponents) {
     return (
         <div className="d-inline-block align-middle">
-            <Image src={"/lolContent/emblems/Emblem_" + props.Id + ".png"} height={128} width={128}></Image>
+            <Image src={"https://static.patrykstyla.com/emblems/Emblem_" + props.Id + ".png"} height={128} width={128}></Image>
         </div>
     )
 }
@@ -116,7 +116,7 @@ export function TierImage(props: ImageComponents) {
 export function ProvisionalTierImage() {
     return (
         <div className="d-inline-block align-middle">
-            <Image src={"/lolContent/emblems/Emblem_PROVISIONAL.png"} height={128} width={128}></Image>
+            <Image src={"https://static.patrykstyla.com/emblems/Emblem_PROVISIONAL.png"} height={128} width={128}></Image>
         </div>
     )
 }
@@ -127,7 +127,7 @@ export function ProfileImage(props: ImageComponents) {
     return (
         <div className="d-inline-block">
             <div className="position-relative" >
-                <Image src={`/lolContent/${version}/${version}/img/profileicon/` + props.Id} alt="Rank icon"></Image>
+                <Image src={`https://static.patrykstyla.com/${version}/${version}/img/profileicon/` + props.Id} alt="Rank icon"></Image>
                 <span className="position-absolute" id="level"></span>
             </div>
         </div>
