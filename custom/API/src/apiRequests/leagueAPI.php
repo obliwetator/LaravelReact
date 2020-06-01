@@ -72,7 +72,6 @@ class LeagueAPI
 		$this->regions = new Region();
 
 		$this->platforms = new Platform();	
-
 		$this->region = $this->platforms->getPlatformName($this->settings[LeagueAPI::SET_REGION]);
 
 		DragonData::initByApi($this);

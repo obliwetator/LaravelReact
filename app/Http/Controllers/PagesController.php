@@ -60,8 +60,8 @@ class PagesController extends Controller
 		}
 		// Init
 		$lol = new LeagueAPI([]);
-		$db = new dbCall([
-			dbCall::SET_REGION => $region
+		$db = new LeagueDB([
+			LeagueDB::SET_REGION => $region
 		]);
 
 		$locale = 'en_GB';

@@ -29,12 +29,13 @@ class ApiController extends Controller
             self::GET_SUMMONERSPELLS,
             self::GET_REGION,
         ];
+
     /**
      * @var LeagueAPI $api
      */
     private $LeagueAPI;
     /**
-     * @var dbCall $db
+     * @var LeagueDB $db
      */
     private $LeagueDB;
 
@@ -72,7 +73,7 @@ class ApiController extends Controller
             $region = $name->get("region");
             $this->region = $this->regions->getRegionName($region);
         } else {
-            throw new Exception("region not set");
+            $this->region = "null";
         }
     }
     private function LeagueAPI(): LeagueAPI
@@ -298,7 +299,7 @@ class ApiController extends Controller
             ->download("lolContent/$LatestVersion/$LatestVersion/data/en_GB/runesReforgedByKey.json",
             null,
             [
-                "cache-control' => 'max-age=604800, public"
+                'cache-control' => 'max-age=604800, public'
             ]);
     }
 

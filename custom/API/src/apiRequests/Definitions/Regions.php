@@ -47,6 +47,8 @@ class Region implements IRegion
 
 	const JAPAN = 'jp';
 
+	const NO_REGION = 'null';
+
 	public static $list = array(
 		Platform::NORTH_AMERICA   => self::NORTH_AMERICA,
 		Platform::EUROPE          => self::EUROPE,
@@ -62,6 +64,7 @@ class Region implements IRegion
 		Platform::KOREA           => self::KOREA,
 		Platform::JAPAN           => self::JAPAN,
 		Platform::AMERICAS        => self::AMERICAS,
+		Platform::NO_REGION       => self::NO_REGION,
 	);
 
 

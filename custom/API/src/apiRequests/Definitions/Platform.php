@@ -58,6 +58,8 @@ class Platform implements IPlatform
 
 	const ASIA = 'asia';
 
+	const NO_REGION = 'null';
+
 	public static $list = array(
 		Region::NORTH_AMERICA   => self::NORTH_AMERICA,
 		Region::EUROPE          => self::EUROPE,
@@ -73,6 +75,7 @@ class Platform implements IPlatform
 		Region::JAPAN           => self::JAPAN,
 		Region::AMERICAS        => self::AMERICAS,
 		Region::ASIA            => self::ASIA,
+		Region::NO_REGION		=> self::NO_REGION
 	);
 
 
@@ -87,7 +90,6 @@ class Platform implements IPlatform
 
 	public function getPlatformName( string $region ): string
 	{
-
 		return self::$list[$region];
 	}
 }
