@@ -373,7 +373,7 @@ class GetNewDD extends Command
     private function ConvertChampions()
     {
         /** @var array $data */
-        $data = file_get_contents("public/lolContent/$this->lastVersion/$this->lastVersion/data/en_GB/" . "champion.json");
+        $data = file_get_contents(self::base."$this->lastVersion/$this->lastVersion/data/en_GB/" . "champion.json");
         $data = json_decode($data, true);
         // Convert names => IDs
 		$data_by_key = $data;
@@ -389,7 +389,7 @@ class GetNewDD extends Command
 		}, $data_by_key['data']);
 		$data_by_key['keys'] = array_flip($data_by_key['keys']);
 
-        file_put_contents("public/lolContent/$this->lastVersion/$this->lastVersion/data/en_GB/" . "championByKey.json", json_encode($data_by_key));
+        file_put_contents(self::base."$this->lastVersion/$this->lastVersion/data/en_GB/" . "championByKey.json", json_encode($data_by_key));
 
         $this->LogToText("Converted Champions");
     }
@@ -397,7 +397,7 @@ class GetNewDD extends Command
     private function ConvertSummonerSpells()
     {
         /** @var array $data */
-        $data = file_get_contents("public/lolContent/$this->lastVersion/$this->lastVersion/data/en_GB/" . "summoner.json");
+        $data = file_get_contents(self::base."$this->lastVersion/$this->lastVersion/data/en_GB/" . "summoner.json");
         $data = json_decode($data, true);
 
 		$data_by_key = $data;
@@ -407,14 +407,14 @@ class GetNewDD extends Command
 			$data_by_key['data'][(int)$d['key']] = $d;
 		});
 
-        file_put_contents("public/lolContent/$this->lastVersion/$this->lastVersion/data/en_GB/" . "summonerByKey.json", json_encode($data_by_key));
+        file_put_contents(self::base."$this->lastVersion/$this->lastVersion/data/en_GB/" . "summonerByKey.json", json_encode($data_by_key));
 
         $this->LogToText("Converted Spells");
     }
     private function ConvertRunes()
     {
         /** @var array $data */
-        $data = file_get_contents("public/lolContent/$this->lastVersion/$this->lastVersion/data/en_GB/" . "runesReforged.json");
+        $data = file_get_contents(self::base."$this->lastVersion/$this->lastVersion/data/en_GB/" . "runesReforged.json");
         $data = json_decode($data, true);
 
         $r = [];
@@ -432,7 +432,7 @@ class GetNewDD extends Command
 			}
         }
         
-        file_put_contents("public/lolContent/$this->lastVersion/$this->lastVersion/data/en_GB/" . "runesReforgedByKey.json", json_encode($r));
+        file_put_contents(self::base."$this->lastVersion/$this->lastVersion/data/en_GB/" . "runesReforgedByKey.json", json_encode($r));
 
         $this->LogToText("Converted Runes");
     }
